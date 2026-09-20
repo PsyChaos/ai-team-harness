@@ -84,6 +84,10 @@ failed executable local checks still require PARTIAL or FAILED. Pending external
 validation permits publication and review only; it never grants merge approval.
 Preserve existing implementation commits. If only handing off external checks,
 reuse the current clean HEAD; do not create documentation-only retry commits.
+If the broker prepared an upstream integration (MERGE_HEAD exists and the Task
+Pack says so), resolve its conflicts and commit that prepared merge locally.
+This is branch integration only, never permission to merge a PR or push. Preserve
+upstream functionality as well as your task, rerun checks, and report the new HEAD.
 HANDOFF
   fi
 )"

@@ -32,6 +32,18 @@ current HEAD and include a `Decision: PASS` or `Decision: APPROVE` line. The bro
 signs this evidence and supplies it to the retry worker and reviewer; a changed
 HEAD invalidates it. Never use this option to waive missing validation.
 
+After validating a new commit without resuming implementation, use
+`coordinator-broker record-browser-validation --issue N --report /absolute/report.md`.
+The same exact-commit and signature requirements apply.
+
+A VERIFIED PR conflicting with a newer default branch receives one broker-bound
+upstream integration attempt. The broker fetches the trusted default branch and
+records both parent commits before preparing a local merge. The assigned worker
+resolves conflicts and commits locally; publication remains a fast-forward push.
+Interrupted preparation can replay the pending transition. CI and independent
+review run again, and prior browser evidence must be renewed for the new HEAD.
+A second upstream conflict requires operator inspection.
+
 Reviewer process failures are retried separately, within HARNESS_MAX_RETRIES;
 they do not trigger implementation changes. Before launching Claude, an expired
 file-backed OAuth credential is refreshed by the trusted CLI outside the

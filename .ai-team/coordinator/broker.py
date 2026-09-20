@@ -801,8 +801,15 @@ def validate_implementation(issue: int, branch: str, commit: str) -> list[str]:
     commits = safe_clone_git(issue, ["rev-list", "--count", f"{base}..{head}"])
     if not commits.isdigit() or int(commits) < 1:
         raise BrokerError("implementation has no commits")
-    if safe_clone_git(issue, ["rev-list", "--merges", f"{base}..{head}"]):
-        raise BrokerError("implementation contains merge commits")
+    merges = safe_clone_git(issue, ["rev-list", "--merges", f"{base}..{head}"]).splitlines()
+    if merges:
+        integration_parent = clone.get("integration_parent_sha")
+        if (len(merges) != 1 or not isinstance(integration_parent, str)
+                or not re.fullmatch(r"[0-9a-f]{40}", integration_parent)):
+            raise BrokerError("implementation contains unbound merge commits")
+        parents = safe_clone_git(issue, ["rev-list", "--parents", "-n", "1", merges[0]]).split()
+        if parents != [merges[0], integration_parent, base]:
+            raise BrokerError("integration merge parents do not match the broker-bound heads")
     raw = safe_clone_git_completed(issue, ["diff", "--no-ext-diff", "--no-textconv",
                                                "--name-only", "-z", f"{base}...{head}"])
     if raw.returncode:
@@ -1555,15 +1562,87 @@ def require_pending_validation(issue: int, head: str, checks: list[dict[str, Any
     pending = implementation.get("pending_validation", [])
     if any("[external:ci]" in line for line in pending) and not checks:
         raise BrokerError("deferred CI requires a nonempty passing CI rollup")
-    if any("[external:browser]" in line for line in pending) and not external_validation_report(issue, head):
+    metadata_path = clone_metadata_path(issue)
+    metadata = read_json_file(metadata_path) if metadata_path.exists() else {}
+    prior = metadata.get("integration_parent_sha")
+    browser_required = (metadata.get("browser_validation_required") is True
+                        or any("[external:browser]" in line for line in pending)
+                        or bool(prior and external_validation_report(issue, prior)))
+    if browser_required and not external_validation_report(issue, head):
         raise BrokerError("deferred browser validation lacks a signed PASS report for this HEAD")
 
 
 def advance_merge_gate(action: dict[str, Any]) -> None:
     item = fresh_lifecycle_item(action)
+    pr = exact_pr(pr_details(action["pr"]), action, state="OPEN")
+    if pr.get("headRefOid") != action.get("head_sha"):
+        raise BrokerError("pull request head changed")
+    if pr.get("mergeable") == "CONFLICTING":
+        prepare_upstream_integration(action, item, pr)
+        return
     merge_gates(action)
     require_project_status(action["issue"], str(item["id"]), "VERIFIED")
     set_status(str(item["id"]), "MERGE_READY")
+
+
+def prepare_upstream_integration(action: dict[str, Any], item: dict[str, Any], pr: dict[str, Any]) -> None:
+    """Prepare a bound upstream merge; only the assigned worker resolves code."""
+    issue = action["issue"]
+    if any(unit_active(f"ai-harness-{role}-{issue}") for role in ("impl", "review", "security-review")):
+        raise BrokerError("cannot integrate upstream while a worker is active")
+    _, _, results, _ = managed_paths(issue)
+    result = parse_implementation_result(results / f"issue-{issue}-implementer.md")
+    if result["commit"] != pr["headRefOid"]:
+        raise BrokerError("upstream integration HEAD mismatch")
+    metadata = sanitize_clone_metadata(issue, action["branch"])
+    pending = (metadata.get("integration_pending") is True
+               and metadata.get("integration_parent_sha") == result["commit"])
+    if metadata.get("integration_parent_sha") and not pending:
+        set_project_field(str(item["id"]), "Evidence", "Upstream changed again after a prior integration; operator inspection required.")
+        set_status(str(item["id"]), "WAITING_HUMAN")
+        return
+    require_project_status(issue, str(item["id"]), "VERIFIED")
+    maximum = int(os.environ.get("HARNESS_MAX_RETRIES", "2"))
+    if maximum < 1:
+        raise BrokerError("upstream integration requires a positive retry budget")
+    if pending:
+        upstream = str(metadata.get("integration_target_sha", ""))
+        if (not re.fullmatch(r"[0-9a-f]{40}", upstream)
+                or metadata.get("integration_parent_sha") != result["commit"]
+                or safe_clone_git(issue, ["rev-parse", "HEAD"]) != result["commit"]
+                or safe_clone_git(issue, ["branch", "--show-current"]) != action["branch"]):
+            raise BrokerError("pending integration identity changed")
+    else:
+        validate_implementation(issue, action["branch"], result["commit"])
+        origin = validate_origin_url(str(metadata["origin_url"]))
+        safe_clone_git(issue, ["fetch", "--no-tags", origin, f"refs/heads/{metadata['default_branch']}"], network=True)
+        upstream = safe_clone_git(issue, ["rev-parse", "FETCH_HEAD"])
+        if not re.fullmatch(r"[0-9a-f]{40}", upstream):
+            raise BrokerError("invalid fetched upstream commit")
+        if not safe_clone_git_completed(issue, ["merge-base", "--is-ancestor", upstream, result["commit"]]).returncode:
+            return  # GitHub may still be recomputing mergeability.
+        metadata.update(integration_pending=True, integration_target_sha=upstream,
+                        integration_parent_sha=result["commit"])
+        atomic_json(clone_metadata_path(issue), metadata)
+    merge_head = safe_clone_git_completed(issue, ["rev-parse", "--verify", "MERGE_HEAD"])
+    if merge_head.returncode:
+        validate_implementation(issue, action["branch"], result["commit"])
+        merged = safe_clone_git_completed(issue, ["-c", "user.name=AI Team Harness", "-c",
+            "user.email=harness@example.invalid", "merge", "--no-commit", "--no-ff", upstream])
+        if merged.returncode not in {0, 1}:
+            raise BrokerError("could not prepare upstream integration")
+    if safe_clone_git(issue, ["rev-parse", "MERGE_HEAD"]) != upstream:
+        raise BrokerError("prepared integration target changed")
+    metadata.update(base_sha=upstream, integration_parent_sha=result["commit"])
+    atomic_json(clone_metadata_path(issue), metadata)
+    set_project_field(str(item["id"]), "Evidence",
+        "Upstream integration prepared by broker. Resolve the staged conflicts, preserve both task "
+        "functionality and upstream changes, then commit the prepared merge. Revalidate; previous "
+        "review and browser evidence belongs to the old HEAD and does not approve the new commit.")
+    set_project_field(str(item["id"]), "Retry Count", str(maximum - 1))
+    set_status(str(item["id"]), "RETRY_PENDING")
+    metadata["integration_pending"] = False
+    atomic_json(clone_metadata_path(issue), metadata)
 
 
 def merge_pr(action: dict[str, Any]) -> None:
@@ -1752,7 +1831,7 @@ def retry_implementation(action: dict[str, Any]) -> None:
     pack = safe_child(root / f".ai-team/runtime/taskpacks/issue-{action['issue']}-implementer.md",
                       root / ".ai-team/runtime/taskpacks")
     retries = legacy_retry_credit(pack, retries, operator_recovery=(
-        field_value(item, "Evidence").startswith("Operator recovery;")))
+        field_value(item, "Evidence").startswith(("Operator recovery;", "Upstream integration prepared by broker."))))
     maximum = int(os.environ.get("HARNESS_MAX_RETRIES", "2"))
     if retries >= maximum:
         require_project_status(action["issue"], str(item["id"]), action["status"])
@@ -1813,7 +1892,7 @@ def retry_implementation(action: dict[str, Any]) -> None:
         sanitize_clone_metadata(action["issue"], action["branch"])
         head = safe_clone_git(action["issue"], ["rev-parse", "HEAD"])
         external_validation = external_validation_report(action["issue"], head)
-    if external_validation:
+    if external_validation and not (worktree / ".git/MERGE_HEAD").exists():
         evidence_text += "\n\nExact-HEAD external validation (broker-verified signature):\n" + external_validation
     pack_text = render_retry_pack(action, scope, worktree, evidence_kind,
                                   evidence_digest, evidence_text)
@@ -1916,6 +1995,29 @@ def external_validation_report(issue: int, head: str) -> str:
     return report
 
 
+def register_external_validation(issue: int, item: dict[str, Any], validation_report: Path) -> None:
+    if unit_active(f"ai-harness-impl-{issue}"):
+        raise BrokerError("cannot attest while an implementer is active")
+    report = optional_managed_text(validation_report)
+    if not report or len(report) > MAX_RETRY_EVIDENCE:
+        raise BrokerError("external validation report must be nonempty and bounded")
+    branch = canonical_branch(item)
+    metadata = sanitize_clone_metadata(issue, branch)
+    head = safe_clone_git(issue, ["rev-parse", "HEAD"])
+    validate_implementation(issue, branch, head)
+    if head not in report:
+        raise BrokerError("external validation report does not identify current HEAD")
+    if not re.search(r"(?m)^Decision: (?:PASS|APPROVE)(?:[ .]|$)", report):
+        raise BrokerError("external browser report must explicitly state PASS or APPROVE")
+    _, _, _, reviews = managed_paths(issue)
+    path = safe_child(reviews / f"issue-{issue}-external-validation.md", reviews)
+    metadata["browser_validation_required"] = True
+    atomic_json(clone_metadata_path(issue), metadata)
+    atomic_text(path, signed_evidence(EXTERNAL_VALIDATION_MARKER, {
+        "repo": repo_name(), "issue": issue, "head_sha": head,
+        "kind": "browser", "outcome": "PASS", "report": report}))
+
+
 def resume_implementation(issue: int, reason: str, validation_report: Path | None = None) -> None:
     """Operator-only recovery grants one retry; it never approves or merges work."""
     if issue < 1 or not reason.strip() or len(reason) > 2000:
@@ -1936,23 +2038,7 @@ def resume_implementation(issue: int, reason: str, validation_report: Path | Non
     if not previous.isdigit():
         raise BrokerError("invalid retry count")
     if validation_report is not None:
-        report = optional_managed_text(validation_report)
-        if not report or len(report) > MAX_RETRY_EVIDENCE:
-            raise BrokerError("external validation report must be nonempty and bounded")
-        branch = canonical_branch(item)
-        sanitize_clone_metadata(issue, branch)
-        head = safe_clone_git(issue, ["rev-parse", "HEAD"])
-        validate_implementation(issue, branch, head)
-        # Operator reports must explicitly identify the commit that was checked.
-        if head not in report:
-            raise BrokerError("external validation report does not identify current HEAD")
-        if not re.search(r"(?m)^Decision: (?:PASS|APPROVE)(?:[ .]|$)", report):
-            raise BrokerError("external browser report must explicitly state PASS or APPROVE")
-        _, _, _, reviews = managed_paths(issue)
-        path = safe_child(reviews / f"issue-{issue}-external-validation.md", reviews)
-        atomic_text(path, signed_evidence(EXTERNAL_VALIDATION_MARKER, {
-            "repo": repo_name(), "issue": issue, "head_sha": head,
-            "kind": "browser", "outcome": "PASS", "report": report}))
+        register_external_validation(issue, item, validation_report)
     require_project_status(issue, str(item["id"]), "WAITING_HUMAN")
     set_project_field(str(item["id"]), "Evidence",
                       f"Operator recovery; previous retry count {previous}; one new attempt. {reason}")
@@ -1970,11 +2056,21 @@ def main() -> None:
     app.add_argument("--decisions", required=True, type=Path)
     sub.add_parser("run")
     sub.add_parser("sync-status")
+    record = sub.add_parser("record-browser-validation")
+    record.add_argument("--issue", type=int, required=True)
+    record.add_argument("--report", type=Path, required=True)
     resume = sub.add_parser("resume")
     resume.add_argument("--issue", type=int, required=True)
     resume.add_argument("--reason", required=True)
     resume.add_argument("--validation-report", type=Path)
     args = parser.parse_args()
+    if args.command == "record-browser-validation":
+        matches = [item for item in project_items() if issue_content(item)["number"] == args.issue]
+        if args.issue < 1 or len(matches) != 1:
+            raise BrokerError("validation issue missing or ambiguous")
+        register_external_validation(args.issue, matches[0], args.report)
+        print(f"Recorded successful external browser validation for issue #{args.issue}.")
+        return
     if args.command == "sync-status":
         for item in project_items():
             sync_standard_status(item, field_value(item, "Harness Status"))
