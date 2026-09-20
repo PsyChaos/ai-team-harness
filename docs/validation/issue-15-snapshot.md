@@ -54,6 +54,9 @@ the canonical signing bytes, signature and full value tree are preserved.
 Rollback needs no key or graph transformation: Python reads the migrated data.
 Python 3 is required for the cross-verification tests, not for production Go.
 
+For the preservation-only bootstrap migration command, recorded full graph and
+tested rollback procedure, see [the bootstrap migration runbook](../bootstrap-migration.md).
+
 ## Local security evidence checklist
 
 These are implementer checks, **not independent security approval**.
