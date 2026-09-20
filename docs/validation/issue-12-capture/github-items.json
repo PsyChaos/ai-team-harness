@@ -1,0 +1,1482 @@
+[
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 1,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706fw"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 2,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Planner"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706iI"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 3,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 2.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706kA"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 4,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 2.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706nU"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 5,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "WAITING_HUMAN"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 2.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706qs"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 6,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706u4"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 7,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Planner"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg706zc"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 8,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 2.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg7063o"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 8,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Eligible-frontier scheduler with bounded aging",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/8"
+          },
+          {
+            "number": 5,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Provider/model capability registry",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/5"
+          }
+        ]
+      },
+      "number": 9,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg7068g"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 9,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Deterministic tuple selection with bounded judgment fallback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/9"
+          }
+        ]
+      },
+      "number": 10,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707Bc"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 11,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707FU"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 12,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "WAITING_HUMAN"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 2.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707J8"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 4,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Factory Floor theme shell served by the Go binary",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/4"
+          },
+          {
+            "number": 9,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Deterministic tuple selection with bounded judgment fallback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/9"
+          },
+          {
+            "number": 11,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Bounded event journal with HTTP snapshot and SSE streaming",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/11"
+          }
+        ]
+      },
+      "number": 13,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707OA"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 14,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Planner"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707R8"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 15,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "CLOSED",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "DONE"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707VU"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 16,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "WAITING_HUMAN"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707Zk"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 9,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Deterministic tuple selection with bounded judgment fallback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/9"
+          },
+          {
+            "number": 15,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Native signed snapshot/apply compatible with existing bootstrap",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/15"
+          }
+        ]
+      },
+      "number": 17,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707dg"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 17,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Native publication and independent review assignment",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/17"
+          }
+        ]
+      },
+      "number": 18,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707i8"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 9,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Deterministic tuple selection with bounded judgment fallback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/9"
+          },
+          {
+            "number": 8,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Eligible-frontier scheduler with bounded aging",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/8"
+          }
+        ]
+      },
+      "number": 19,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707mY"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 20,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Planner"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707qY"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 18,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Native CI status and head-bound merge gate",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/18"
+          },
+          {
+            "number": 15,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Native signed snapshot/apply compatible with existing bootstrap",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/15"
+          }
+        ]
+      },
+      "number": 21,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707sU"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 22,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "WAITING_HUMAN"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg707vw"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 17,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Native publication and independent review assignment",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/17"
+          },
+          {
+            "number": 16,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Namespaced native worker lifecycle and isolation",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/16"
+          }
+        ]
+      },
+      "number": 23,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg7070o"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 21,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Versioned native-executor activation with lock and rollback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/21"
+          },
+          {
+            "number": 19,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Shadow/parity comparison harness",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/19"
+          }
+        ]
+      },
+      "number": 24,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg7075I"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": false,
+        "nodes": []
+      },
+      "number": 25,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BACKLOG"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Planner"
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg70790"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 13,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Live dashboard data binding for Factory/Agents/Events/detail views",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/13"
+          },
+          {
+            "number": 11,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Bounded event journal with HTTP snapshot and SSE streaming",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/11"
+          },
+          {
+            "number": 17,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Native publication and independent review assignment",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/17"
+          }
+        ]
+      },
+      "number": 26,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg708B8"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 21,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Versioned native-executor activation with lock and rollback",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/21"
+          },
+          {
+            "number": 13,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Live dashboard data binding for Factory/Agents/Events/detail views",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/13"
+          },
+          {
+            "number": 16,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Namespaced native worker lifecycle and isolation",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/16"
+          },
+          {
+            "number": 15,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "CLOSED",
+            "title": "Native signed snapshot/apply compatible with existing bootstrap",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/15"
+          }
+        ]
+      },
+      "number": 27,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg708Fs"
+  },
+  {
+    "content": {
+      "blockedBy": {
+        "complete": true,
+        "nodes": [
+          {
+            "number": 22,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Bootstrap signature and durable graph migration",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/22"
+          },
+          {
+            "number": 24,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Disposable end-to-end parity rehearsal go/no-go gate",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/24"
+          },
+          {
+            "number": 23,
+            "repository": {
+              "nameWithOwner": "PsyChaos/ai-team-harness"
+            },
+            "state": "OPEN",
+            "title": "Crash/reboot recovery and multi-repo isolation verification",
+            "url": "https://github.com/PsyChaos/ai-team-harness/issues/23"
+          }
+        ]
+      },
+      "number": 28,
+      "repository": {
+        "nameWithOwner": "PsyChaos/ai-team-harness"
+      },
+      "state": "OPEN",
+      "type": "Issue"
+    },
+    "fieldValues": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Harness Status"
+          },
+          "name": "BLOCKED"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Agent Role"
+          },
+          "name": "Implementer"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldSingleSelectValue",
+          "field": {
+            "name": "Provider"
+          },
+          "name": "OpenAI"
+        },
+        {
+          "__typename": "ProjectV2ItemFieldNumberValue",
+          "field": {
+            "name": "Retry Count"
+          },
+          "number": 0.0
+        }
+      ]
+    },
+    "id": "PVTI_lAHOAAK91c4BkGWFzg708KE"
+  }
+]

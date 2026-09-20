@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "source_sha256_before": {
+    "snapshot.json": "ff8384fe0c20b20dd2d20dca0eab6da2597d421440dbcc1f942e8f0679bc806f",
+    "github-items.json": "aee9606d2471014a615f7abe05ab7886d2d943b74b497e17476c822abad40b79"
+  },
+  "source_sha256_after": {
+    "snapshot.json": "ff8384fe0c20b20dd2d20dca0eab6da2597d421440dbcc1f942e8f0679bc806f",
+    "github-items.json": "aee9606d2471014a615f7abe05ab7886d2d943b74b497e17476c822abad40b79"
+  },
+  "journal_version": 1,
+  "journal_cursor": 29,
+  "broker_events": 1,
+  "task_events": 28,
+  "all_projected_fields_match": true,
+  "persisted_journal_matches_stdout": true,
+  "temporary_input_bytes_unchanged": true,
+  "journal_path": "/tmp/pybridge-journal-269997103/journal.json"
+}

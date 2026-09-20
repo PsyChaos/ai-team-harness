@@ -1,8 +1,8 @@
 # Observation journal and HTTP API
 
-`internal/journal` is a synthetic-event read model for a future dashboard adapter.
-It does not route or execute work. GitHub remains authoritative. The CLI does not
-yet start an HTTP listener or produce events.
+`internal/journal` is an observation read model. It does not route or execute
+work. GitHub remains authoritative. The temporary [Python observer bridge](python-observer-bridge.md)
+produces real-source observations; `cmd/harness` still serves the fixture demo.
 
 Create a journal with `journal.Open(path, journal.Limits{Retain: 1024,
 Pending: 128, MaxEventBytes: 16384})`. The parent directory must already exist,
@@ -23,7 +23,7 @@ An event has `id` (positive uint64), `type` (nonempty, at most 128 bytes), and `
 starting at 1, and continues from persisted state after restart. It must replay
 any missing IDs; multiple unordered producer ID spaces are not supported. Event
 payloads are dashboard-safe observations, not credentials, logs containing secrets,
-or signed broker actions. Payload filtering belongs to the future source adapter.
+or signed broker actions. Payload filtering belongs to the source adapter.
 
 IDs determine order, not arrival time. The first accepted payload for an ID wins;
 replays at or below the committed cursor and duplicates in the pending buffer are
