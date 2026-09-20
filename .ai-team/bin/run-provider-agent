@@ -102,14 +102,22 @@ HANDOFF
 )"
 
 run_and_capture() {
+  local error_file rc kind="process"
+  error_file="$(mktemp -t harness-provider-error-XXXXXXXX)"
   set +e
-  "$@" | tee "$RESULT"
-  local rc=${PIPESTATUS[0]}
+  "$@" 2>"$error_file" | tee "$RESULT"
+  rc=${PIPESTATUS[0]}
   set -e
+  cat "$error_file" >&2
   if [[ "$rc" -ne 0 ]]; then
-    printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
+    if tail -c 65536 "$error_file" | grep -Ei "you.ve hit your usage limit|usage limit (reached|exceeded)|rate_limit_exceeded|insufficient_quota|rate limit exceeded|credit balance is too low|exceeded your current quota" >/dev/null; then
+      kind="quota"
+    fi
+    printf '\n# Harness Process Failure\n\nProvider process exit code: %s\nProvider failure kind: %s\n' "$rc" "$kind" >> "$RESULT"
+    rm -f -- "$error_file"
     return "$rc"
   fi
+  rm -f -- "$error_file"
 }
 
 case "$PROVIDER" in
@@ -120,14 +128,7 @@ case "$PROVIDER" in
     args=(exec --ephemeral --strict-config)
     [[ -n "$SELECTED_MODEL" ]] && args+=(--model "$SELECTED_MODEL")
 
-    set +e
-    printf '%s\n' "$PROMPT" | codex "${args[@]}" - | tee "$RESULT"
-    rc=${PIPESTATUS[1]}
-    set -e
-    if [[ "$rc" -ne 0 ]]; then
-      printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
-      exit "$rc"
-    fi
+    printf '%s\n' "$PROMPT" | run_and_capture codex "${args[@]}" -
     ;;
 
   claude)

@@ -607,6 +607,8 @@ class BrokerSecurityTests(unittest.TestCase):
              mock.patch.object(BROKER, "parse_job", return_value=job), \
              mock.patch.object(BROKER, "unit_active", return_value=False), \
              mock.patch.object(BROKER, "parse_implementation_result", return_value=result), \
+             mock.patch.object(BROKER, "quota_failure", return_value=False), \
+             mock.patch.object(BROKER, "recover_quota_launch", return_value=False), \
              mock.patch.object(BROKER, "file_digest", return_value="e" * 64), \
              mock.patch.object(BROKER, "validate_implementation", return_value=["safe.txt"]), \
              mock.patch.object(BROKER, "require_project_status"), \
