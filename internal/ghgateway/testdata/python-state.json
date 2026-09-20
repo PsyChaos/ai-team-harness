@@ -1,0 +1,506 @@
+[
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_1",
+        "number": 1,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "CLOSED",
+        "title": "Task 1",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/1"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "DONE"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          },
+          {
+            "field": {
+              "name": "Retry Count"
+            },
+            "number": 0
+          }
+        ]
+      },
+      "id": "P_1"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "0",
+    "role": "Implementer",
+    "status": "DONE"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_2",
+        "number": 2,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 2",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/2"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "READY"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          }
+        ]
+      },
+      "id": "P_2"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "",
+    "role": "Implementer",
+    "status": "READY"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_3",
+        "number": 3,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 3",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/3"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "CLAIMED"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          },
+          {
+            "field": {
+              "name": "Retry Count"
+            },
+            "number": 0
+          }
+        ]
+      },
+      "id": "P_3"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "0",
+    "role": "Implementer",
+    "status": "CLAIMED"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_4",
+        "number": 4,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 4",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/4"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "IN_PROGRESS"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          },
+          {
+            "field": {
+              "name": "Retry Count"
+            },
+            "number": 1
+          }
+        ]
+      },
+      "id": "P_4"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "1",
+    "role": "Implementer",
+    "status": "IN_PROGRESS"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_5",
+        "number": 5,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 5",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/5"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "RETRY_PENDING"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          },
+          {
+            "field": {
+              "name": "Retry Count"
+            },
+            "number": 2.0
+          }
+        ]
+      },
+      "id": "P_5"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "2",
+    "role": "Implementer",
+    "status": "RETRY_PENDING"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": true,
+          "nodes": [
+            {
+              "number": 1,
+              "repository": {
+                "nameWithOwner": "acme/widget"
+              },
+              "state": "CLOSED",
+              "title": "Task 1",
+              "url": "https://github.com/acme/widget/issues/1"
+            }
+          ]
+        },
+        "body": "Recorded offline graph",
+        "id": "I_6",
+        "number": 6,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 6",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/6"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "BLOCKED"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          }
+        ]
+      },
+      "id": "P_6"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "",
+    "role": "Implementer",
+    "status": "BLOCKED"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": true,
+          "nodes": [
+            {
+              "number": 1,
+              "repository": {
+                "nameWithOwner": "acme/widget"
+              },
+              "state": "CLOSED",
+              "title": "Task 1",
+              "url": "https://github.com/acme/widget/issues/1"
+            },
+            {
+              "number": 4,
+              "repository": {
+                "nameWithOwner": "acme/widget"
+              },
+              "state": "OPEN",
+              "title": "Task 4",
+              "url": "https://github.com/acme/widget/issues/4"
+            }
+          ]
+        },
+        "body": "Recorded offline graph",
+        "id": "I_7",
+        "number": 7,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 7",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/7"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "BLOCKED"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          }
+        ]
+      },
+      "id": "P_7"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "",
+    "role": "Implementer",
+    "status": "BLOCKED"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": true,
+          "nodes": []
+        },
+        "body": "Recorded offline graph",
+        "id": "I_8",
+        "number": 8,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 8",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/8"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "BLOCKED"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          }
+        ]
+      },
+      "id": "P_8"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "",
+    "role": "Implementer",
+    "status": "BLOCKED"
+  },
+  {
+    "item": {
+      "content": {
+        "blockedBy": {
+          "complete": false,
+          "nodes": [
+            {
+              "number": 1,
+              "repository": {
+                "nameWithOwner": "acme/widget"
+              },
+              "state": "CLOSED",
+              "title": "Task 1",
+              "url": "https://github.com/acme/widget/issues/1"
+            }
+          ]
+        },
+        "body": "Recorded offline graph",
+        "id": "I_9",
+        "number": 9,
+        "repository": {
+          "nameWithOwner": "acme/widget"
+        },
+        "state": "OPEN",
+        "title": "Task 9",
+        "type": "Issue",
+        "url": "https://github.com/acme/widget/issues/9"
+      },
+      "fieldValues": {
+        "nodes": [
+          {
+            "field": {
+              "name": "Harness Status"
+            },
+            "name": "BLOCKED"
+          },
+          {
+            "field": {
+              "name": "Agent Role"
+            },
+            "name": "Implementer"
+          },
+          {
+            "field": {
+              "name": "Provider"
+            },
+            "name": "Codex"
+          }
+        ]
+      },
+      "id": "P_9"
+    },
+    "labels": null,
+    "lease": null,
+    "provider": "Codex",
+    "retry_count": "",
+    "role": "Implementer",
+    "status": "BLOCKED"
+  }
+]

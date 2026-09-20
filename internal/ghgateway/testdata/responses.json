@@ -1,0 +1,543 @@
+{
+  "calls": [
+    {
+      "operation": "owner",
+      "variables": {},
+      "response": {
+        "type": "Organization"
+      }
+    },
+    {
+      "operation": "HarnessProjectItems",
+      "variables": {
+        "login": "acme",
+        "number": 1
+      },
+      "response": {
+        "data": {
+          "organization": {
+            "projectV2": {
+              "items": {
+                "nodes": [
+                  {
+                    "id": "P_1",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_1",
+                      "number": 1,
+                      "url": "https://github.com/acme/widget/issues/1",
+                      "title": "Task 1",
+                      "body": "Recorded offline graph",
+                      "state": "CLOSED",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "DONE",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        },
+                        {
+                          "number": 0,
+                          "field": {
+                            "name": "Retry Count"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_2",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_2",
+                      "number": 2,
+                      "url": "https://github.com/acme/widget/issues/2",
+                      "title": "Task 2",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "READY",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_3",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_3",
+                      "number": 3,
+                      "url": "https://github.com/acme/widget/issues/3",
+                      "title": "Task 3",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "CLAIMED",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        },
+                        {
+                          "number": 0,
+                          "field": {
+                            "name": "Retry Count"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_4",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_4",
+                      "number": 4,
+                      "url": "https://github.com/acme/widget/issues/4",
+                      "title": "Task 4",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "IN_PROGRESS",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        },
+                        {
+                          "number": 1,
+                          "field": {
+                            "name": "Retry Count"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "cursor-1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "operation": "HarnessProjectItems",
+      "variables": {
+        "login": "acme",
+        "number": 1,
+        "cursor": "cursor-1"
+      },
+      "response": {
+        "data": {
+          "organization": {
+            "projectV2": {
+              "items": {
+                "nodes": [
+                  {
+                    "id": "P_5",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_5",
+                      "number": 5,
+                      "url": "https://github.com/acme/widget/issues/5",
+                      "title": "Task 5",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "RETRY_PENDING",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        },
+                        {
+                          "number": 2.0,
+                          "field": {
+                            "name": "Retry Count"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_6",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_6",
+                      "number": 6,
+                      "url": "https://github.com/acme/widget/issues/6",
+                      "title": "Task 6",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "BLOCKED",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_7",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_7",
+                      "number": 7,
+                      "url": "https://github.com/acme/widget/issues/7",
+                      "title": "Task 7",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "BLOCKED",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_8",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_8",
+                      "number": 8,
+                      "url": "https://github.com/acme/widget/issues/8",
+                      "title": "Task 8",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "BLOCKED",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  },
+                  {
+                    "id": "P_9",
+                    "isArchived": false,
+                    "content": {
+                      "__typename": "Issue",
+                      "id": "I_9",
+                      "number": 9,
+                      "url": "https://github.com/acme/widget/issues/9",
+                      "title": "Task 9",
+                      "body": "Recorded offline graph",
+                      "state": "OPEN",
+                      "repository": {
+                        "nameWithOwner": "acme/widget"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "name": "BLOCKED",
+                          "field": {
+                            "name": "Harness Status"
+                          }
+                        },
+                        {
+                          "name": "Implementer",
+                          "field": {
+                            "name": "Agent Role"
+                          }
+                        },
+                        {
+                          "name": "Codex",
+                          "field": {
+                            "name": "Provider"
+                          }
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "operation": "HarnessProjectBlockers",
+      "variables": {
+        "ids": [
+          "I_6",
+          "I_7",
+          "I_8",
+          "I_9"
+        ]
+      },
+      "response": {
+        "data": {
+          "nodes": [
+            {
+              "id": "I_6",
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "url": "https://github.com/acme/widget/issues/1",
+                    "title": "Task 1",
+                    "state": "CLOSED",
+                    "repository": {
+                      "nameWithOwner": "acme/widget"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": false
+                }
+              }
+            },
+            {
+              "id": "I_7",
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "url": "https://github.com/acme/widget/issues/1",
+                    "title": "Task 1",
+                    "state": "CLOSED",
+                    "repository": {
+                      "nameWithOwner": "acme/widget"
+                    }
+                  },
+                  {
+                    "number": 4,
+                    "url": "https://github.com/acme/widget/issues/4",
+                    "title": "Task 4",
+                    "state": "OPEN",
+                    "repository": {
+                      "nameWithOwner": "acme/widget"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": false
+                }
+              }
+            },
+            {
+              "id": "I_8",
+              "blockedBy": {
+                "nodes": [],
+                "pageInfo": {
+                  "hasNextPage": false
+                }
+              }
+            },
+            {
+              "id": "I_9",
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "url": "https://github.com/acme/widget/issues/1",
+                    "title": "Task 1",
+                    "state": "CLOSED",
+                    "repository": {
+                      "nameWithOwner": "acme/widget"
+                    }
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
