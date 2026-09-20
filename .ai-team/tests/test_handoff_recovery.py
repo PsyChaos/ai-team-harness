@@ -16,6 +16,52 @@ SPEC.loader.exec_module(BROKER)
 
 
 class HandoffRecoveryTests(unittest.TestCase):
+    def test_review_preamble_is_bounded_unambiguous_and_retains_raw_digest(self):
+        import hashlib
+        report = ("<!-- ai-harness-review:v1 -->\n\n# Review Result\n\n## Decision\nAPPROVE\n\n"
+                  "## Acceptance Criteria\nMet\n\n## Findings\nNone\n\n## Validation Assessment\nChecked\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review.md"
+            raw = "I independently reviewed the code.\n\n" + report
+            path.write_text(raw)
+            parsed = BROKER.parse_review_result(path)
+            self.assertEqual(parsed["decision"], "APPROVE")
+            self.assertEqual(parsed["digest"], hashlib.sha256(raw.encode()).hexdigest())
+            for prefix in ["x" * 4097 + "\n", "HIGH: unresolved issue\n", "CHANGES_REQUESTED\n", "```markdown\n", "## Another result\n", "# Harness Process Failure\n", report]:
+                with self.subTest(prefix=prefix[:35]):
+                    path.write_text(prefix + report)
+                    with self.assertRaises(BROKER.BrokerError):
+                        BROKER.parse_review_result(path)
+            path.write_text(raw.replace("## Findings\nNone", "## Findings\n### [HIGH] Injection"))
+            with self.assertRaisesRegex(BROKER.BrokerError, "blocking findings"):
+                BROKER.parse_review_result(path)
+
+    def test_waiting_reconciliation_never_approves_or_ignores_stale_review_bindings(self):
+        head, digest = "a" * 40, "b" * 64
+        branch = "ai/issue-7-test"
+        item = {"id": "PVTI_7", "Harness Status": "WAITING_HUMAN", "Evidence": "reviewer process failed: invalid review result marker", "content": {"number": 7}}
+        metadata = {"issue": 7, "pr": 9, "role": "reviewer", "branch": branch, "head_sha": head, "implementation_result_digest": digest}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp}), \
+             mock.patch.object(BROKER, "project_items", return_value=[item]), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "trusted_issue_scope"), \
+             mock.patch.object(BROKER, "canonical_branch", return_value=branch), \
+             mock.patch.object(BROKER, "pr_for_branch", return_value={"number": 9, "state": "OPEN", "headRefName": branch, "headRefOid": head}), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": head, "digest": digest}), \
+             mock.patch.object(BROKER, "parse_review_result", return_value={"decision": "CHANGES_REQUESTED"}), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "read_json_file", return_value=metadata), \
+             mock.patch.object(BROKER, "require_project_status"), \
+             mock.patch.object(BROKER, "set_project_field"), \
+             mock.patch.object(BROKER, "set_status") as status:
+            BROKER.reconcile_waiting_result(7)
+            status.assert_called_once_with("PVTI_7", "REVIEWING")
+            status.reset_mock()
+            metadata["head_sha"] = "c" * 40
+            with self.assertRaisesRegex(BROKER.BrokerError, "binding mismatch"):
+                BROKER.reconcile_waiting_result(7)
+            status.assert_not_called()
+
     def test_observation_export_preserves_real_states_and_omits_unneeded_text(self):
         content = {"type": "Issue", "number": 7, "state": "OPEN", "repository": {"nameWithOwner": "acme/widget"},
                    "blockedBy": {"nodes": [], "complete": True}, "body": "large private description"}

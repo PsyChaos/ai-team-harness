@@ -821,7 +821,7 @@ class BrokerSecurityTests(unittest.TestCase):
                   "branch": "ai/issue-7-safe", "pr": 9, "head_sha": "a" * 40,
                   "issue_fingerprint": BROKER.issue_scope_fingerprint(scope)}
         retry_item = item("CHANGES_REQUESTED")
-        retry_item["Retry Count"] = "0"
+        retry_item["Retry Count"] = "2"  # Infrastructure retries must not consume correction attempts.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             os.environ["HARNESS_ROOT"] = str(root)
@@ -849,9 +849,16 @@ class BrokerSecurityTests(unittest.TestCase):
                  mock.patch.object(BROKER, "retry_launch_guard"), \
                  mock.patch.object(BROKER, "require_project_status"), \
                  mock.patch.object(BROKER, "set_project_field"), \
-                 mock.patch.object(BROKER, "set_status"), \
-                 mock.patch.object(BROKER, "run", return_value=""):
+                 mock.patch.object(BROKER, "set_status") as status, \
+                 mock.patch.object(BROKER, "run", return_value="") as spawn:
                 BROKER.retry_implementation(action)
+                self.assertEqual(BROKER.review_correction_attempts(7), 1)
+                BROKER.retry_implementation(action)
+                self.assertEqual(BROKER.review_correction_attempts(7), 2)
+                spawn.reset_mock()
+                BROKER.retry_implementation(action)
+                spawn.assert_not_called()
+                self.assertEqual(status.call_args.args, ("PVTI_1", "WAITING_HUMAN"))
             pack = (root / ".ai-team/runtime/taskpacks/issue-7-implementer.md").read_text()
         self.assertIn("Role: security-reviewer", pack)
         self.assertIn("Provider: gemini", pack)

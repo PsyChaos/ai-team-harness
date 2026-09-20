@@ -87,7 +87,12 @@ All other acceptance bullets must be completed and evidenced. Incomplete code or
 failed executable local checks still require PARTIAL or FAILED. Pending external
 validation permits publication and review only; it never grants merge approval.
 Preserve existing implementation commits. If only handing off external checks,
-reuse the current clean HEAD; do not create documentation-only retry commits.
+reuse the current clean HEAD unless new durable validation evidence is required.
+When a rejecting review requests durable evidence or corrects stale validation
+documentation, update that documentation with real checks, provenance, source
+commit and results, and commit the correction. Do not leave old claims that a
+required check is unavailable after it has actually been performed. Do not
+claim that an older report directly validates a different code revision.
 If the broker prepared an upstream integration (MERGE_HEAD exists and the Task
 Pack says so), resolve its conflicts and commit that prepared merge locally.
 This is branch integration only, never permission to merge a PR or push. Preserve

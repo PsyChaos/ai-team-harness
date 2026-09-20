@@ -830,12 +830,22 @@ def parse_review_result(path: Path) -> dict[str, Any]:
     if not path.is_file() or path.is_symlink() or not 0 < path.stat().st_size <= MAX_FILE:
         raise BrokerError("review result is missing or unsafe")
     raw = path.read_text(encoding="utf-8")
-    if not raw.startswith("<!-- ai-harness-review:v1 -->\n\n# Review Result\n") or "# Harness Process Failure" in raw:
+    marker = "<!-- ai-harness-review:v1 -->"
+    if raw.count(marker) != 1 or "# Harness Process Failure" in raw:
         raise BrokerError("invalid review result marker")
-    decision = section(raw, "Decision", ("Acceptance Criteria",))
+    prefix, document = raw.split(marker, 1)
+    # Tolerate a short conversational introduction, never another result,
+    # fenced example, decision or severity that could contradict the report.
+    if (len(prefix) > 4096 or (prefix and not prefix.endswith("\n"))
+            or re.search(r"(?im)^\s*#|```|\b(?:APPROVE|CHANGES_REQUESTED|CRITICAL|HIGH)\b", prefix)):
+        raise BrokerError("ambiguous review preamble")
+    document = marker + document
+    if not document.startswith(marker + "\n\n# Review Result\n"):
+        raise BrokerError("invalid review result marker")
+    decision = section(document, "Decision", ("Acceptance Criteria",))
     if decision not in {"APPROVE", "CHANGES_REQUESTED"}:
         raise BrokerError("invalid review decision")
-    findings = section(raw, "Findings", ("Validation Assessment", "Residual Risks"))
+    findings = section(document, "Findings", ("Validation Assessment", "Residual Risks"))
     blocking = re.findall(r"^### \[(CRITICAL|HIGH)\]", findings, re.M)
     if decision == "APPROVE" and blocking:
         raise BrokerError("APPROVE review contains blocking findings")
@@ -1839,12 +1849,15 @@ def retry_implementation(action: dict[str, Any]) -> None:
     retries = legacy_retry_credit(pack, retries, operator_recovery=(
         field_value(item, "Evidence").startswith(("Operator recovery;", "Upstream integration prepared by broker."))))
     maximum = int(os.environ.get("HARNESS_MAX_RETRIES", "2"))
-    if retries >= maximum:
+    correction = action["status"] == "CHANGES_REQUESTED"
+    correction_attempts = review_correction_attempts(action["issue"]) if correction else 0
+    attempts = correction_attempts if correction else retries
+    if attempts >= maximum:
         require_project_status(action["issue"], str(item["id"]), action["status"])
         _, _, results, _ = managed_paths(action["issue"])
-        prior = optional_managed_text(results / f"issue-{action['issue']}-implementer.md") or "No worker result."
+        prior = optional_managed_text(results / f"issue-{action['issue']}-{'reviewer' if correction else 'implementer'}.md") or "No worker result."
         set_project_field(str(item["id"]), "Evidence",
-                          f"Retry limit reached ({retries}/{maximum}). " + bounded_retry_evidence(prior)[:850])
+                          f"{'Review correction' if correction else 'Retry'} limit reached ({attempts}/{maximum}). " + bounded_retry_evidence(prior)[:850])
         set_status(str(item["id"]), "WAITING_HUMAN")
         return
     worktree, jobs, results, _ = managed_paths(action["issue"])
@@ -1933,6 +1946,9 @@ def retry_implementation(action: dict[str, Any]) -> None:
         set_project_field(str(item["id"]), "Retry Count", retries_text)
         set_status(str(item["id"]), action["status"])
         raise guard_error
+    if correction:
+        atomic_json(managed_paths(action["issue"])[3] / f"issue-{action['issue']}-correction-budget.json",
+                    {"issue": action["issue"], "attempts": correction_attempts + 1})
     run([str(root / ".ai-team/bin/spawn-agent"), "implementer", action["provider"],
          str(action["issue"]), str(worktree), str(pack), action["profile"]], cwd=root)
 
@@ -1986,6 +2002,55 @@ def apply(snapshot: dict[str, Any], decisions: dict[str, Any]) -> int:
 
 EXTERNAL_VALIDATION_MARKER = "<!-- ai-harness-external-validation:v1 -->"
 VALIDATION_CONTEXT_MARKER = "<!-- ai-harness-validation-context:v1 -->"
+
+
+def review_correction_attempts(issue: int) -> int:
+    path = managed_paths(issue)[3] / f"issue-{issue}-correction-budget.json"
+    if not path.exists():
+        return 0
+    value = read_json_file(path)
+    attempts = value.get("attempts")
+    if value.get("issue") != issue or type(attempts) is not int or attempts < 0:
+        raise BrokerError("invalid review correction budget")
+    return attempts
+
+
+def reconcile_waiting_result(issue: int) -> None:
+    """Reconsume valid existing reviews after a protocol fix; never grant approval."""
+    matches = [item for item in project_items() if issue_content(item)["number"] == issue]
+    if issue < 1 or len(matches) != 1 or field_value(matches[0], "Harness Status") != "WAITING_HUMAN":
+        raise BrokerError("result recovery requires one WAITING_HUMAN item")
+    item = matches[0]
+    evidence = field_value(item, "Evidence")
+    if not ("process failed:" in evidence or evidence.startswith("Retry limit reached")):
+        raise BrokerError("waiting reason does not permit result reconciliation")
+    if any(unit_active(f"ai-harness-{role}-{issue}") for role in ("impl", "review", "security-review")):
+        raise BrokerError("worker still active")
+    trusted_issue_scope(issue)
+    branch = canonical_branch(item)
+    pr = pr_for_branch(branch)
+    implementation = parse_implementation_result(managed_paths(issue)[2] / f"issue-{issue}-implementer.md")
+    validate_implementation(issue, branch, implementation["commit"])
+    if (not pr or pr.get("state") != "OPEN" or pr.get("headRefName") != branch
+            or pr.get("headRefOid") != implementation["commit"]):
+        raise BrokerError("recovery PR head mismatch")
+    roles = ["reviewer"] + (["security-reviewer"] if field_value(item, "Risk") in {"HIGH", "CRITICAL"} else [])
+    decisions = []
+    for role in roles:
+        metadata = read_json_file(review_metadata_path(issue, role))
+        expected = {"issue": issue, "pr": pr["number"], "role": role, "branch": branch,
+                    "head_sha": implementation["commit"], "implementation_result_digest": implementation["digest"]}
+        if any(metadata.get(k) != v for k, v in expected.items()):
+            raise BrokerError("recovery review binding mismatch")
+        decisions.append(parse_review_result(managed_paths(issue)[2] / f"issue-{issue}-{role}.md")["decision"])
+    if evidence.startswith("Retry limit reached"):
+        if "CHANGES_REQUESTED" not in decisions:
+            raise BrokerError("exhausted implementation has no valid rejecting review")
+        if review_correction_attempts(issue) >= int(os.environ.get("HARNESS_MAX_RETRIES", "2")):
+            raise BrokerError("review correction budget exhausted")
+    require_project_status(issue, str(item["id"]), "WAITING_HUMAN")
+    set_project_field(str(item["id"]), "Evidence", "Recovered exact-HEAD structured reviews; broker must consume decisions and enforce all gates.")
+    set_status(str(item["id"]), "REVIEWING")
 
 
 def validation_context(issue: int, head: str) -> str:
@@ -2153,6 +2218,8 @@ def main() -> None:
     app.add_argument("--decisions", required=True, type=Path)
     sub.add_parser("run")
     sub.add_parser("sync-status")
+    reconcile = sub.add_parser("reconcile-waiting-result")
+    reconcile.add_argument("--issue", type=int, required=True)
     context = sub.add_parser("record-validation-context")
     context.add_argument("--issue", type=int, required=True)
     context.add_argument("--report", type=Path, required=True)
@@ -2170,6 +2237,10 @@ def main() -> None:
     resume.add_argument("--reason", required=True)
     resume.add_argument("--validation-report", type=Path)
     args = parser.parse_args()
+    if args.command == "reconcile-waiting-result":
+        reconcile_waiting_result(args.issue)
+        print(f"Issue #{args.issue} queued to reconsume verified existing review artifacts; no approval granted.")
+        return
     if args.command == "resume-review":
         resume_review(args.issue, args.role, args.reason)
         print(f"Issue #{args.issue} queued for one review-process recovery attempt.")

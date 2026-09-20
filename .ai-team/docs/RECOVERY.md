@@ -50,6 +50,23 @@ refuses valid reviews: CHANGES_REQUESTED must go to implementation, never be
 discarded as a format failure. Security reviewers receive the same mandatory
 structured output contract as ordinary reviewers.
 
+A short plain-text introduction before the unique review marker is tolerated.
+Duplicate reports, conflicting decisions/severities in the introduction, fenced
+examples and process failures still fail closed. Evidence digests always cover
+the entire original output; normalization never edits the stored report.
+
+After a parser fix, `reconcile-waiting-result --issue N` can reconsume existing
+complete reviews whose PR, HEAD, role and implementation-result bindings still
+match. It only queues REVIEWING, preserving both approvals and rejections for
+the normal broker gates. It does not grant new approval or reset retry limits.
+
+Valid CHANGES_REQUESTED gets its own cumulative per-issue correction budget
+(HARNESS_MAX_RETRIES), separate from attempts spent on unavailable infrastructure.
+The total Retry Count remains visible for audit. Correcting stale validation
+documentation or committing requested durable evidence is legitimate review work.
+The correction counter does not reset when HEAD changes. Exhaustion remains a
+real intervention point rather than an infinite retry loop.
+
 Complete local implementations may report VALIDATION_PENDING, keeping only
 `- [ ] [external:ci] ...` or `- [ ] [external:browser] ...` unchecked. Publication
 precedes hosted CI. Ordinary incomplete implementation still fails the handoff.
