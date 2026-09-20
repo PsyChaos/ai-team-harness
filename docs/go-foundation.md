@@ -8,8 +8,10 @@ active executor. See [dashboard usage and validation](validation/issue-4-dashboa
 - `domain`: existing broker, bootstrap and decision-engine JSON records.
 - `ghgateway`: read-only normalized Project item interface.
 - `routing`: task routing evidence interface, without dispatch authority.
-- `config`, `journal`, `scheduler`: documented package placeholders. Configuration
-  loading, journal storage and scheduling behavior belong to later tasks.
+- `journal`: bounded persisted observations with snapshot and SSE handlers; see
+  [the journal contract](event-journal.md).
+- `config`, `scheduler`: documented package placeholders. Configuration loading
+  and scheduling behavior belong to later tasks.
 
 No provider SDK, credentials, GitHub writes, systemd calls or Python subprocess
 bridge are introduced by the Go command. Existing shell entrypoints are unchanged.
