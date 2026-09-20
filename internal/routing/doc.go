@@ -1,5 +1,5 @@
-// Package routing defines the boundary for interpreting existing routing records.
-// Provider selection and model invocation are not implemented in this foundation.
+// Package routing selects policy-valid execution tuples from an eligible frontier
+// and interprets legacy routing records. It grants no dispatch authority.
 package routing
 
 import (
