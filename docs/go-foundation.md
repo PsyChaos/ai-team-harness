@@ -1,8 +1,9 @@
 # Go foundation
 
 The repository-root module builds the `cmd/harness` CLI and `internal/` packages
-using only the standard library (Go 1.23 or later). The CLI reports migration
-status; the Python broker remains the active executor.
+using only the standard library (Go 1.23 or later). The CLI serves the embedded
+Factory Floor Demo at `127.0.0.1:8080` by default; the Python broker remains the
+active executor. See [dashboard usage and validation](validation/issue-4-dashboard.md).
 
 - `domain`: existing broker, bootstrap and decision-engine JSON records.
 - `ghgateway`: read-only normalized Project item interface.
