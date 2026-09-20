@@ -43,6 +43,16 @@ review_home="$(CODEX_HOME="$fixture/source" "$ROOT/.ai-team/bin/prepare-codex-ho
 grep -q '^"\." = "read"$' "$review_home/config.toml"
 grep -q '^"\.git" = "read"$' "$review_home/config.toml"
 
+mkdir -p "$fixture/go toolchain/bin" "$fixture/go toolchain/src/runtime"
+cp "$fixture/bin/codex" "$fixture/go toolchain/bin/go"
+go_home="$(HARNESS_GO_ROOT="$fixture/go toolchain" CODEX_HOME="$fixture/source" "$ROOT/.ai-team/bin/prepare-codex-home" "$runtime" implementer)"
+grep -Fq "\"$fixture/go toolchain\" = \"read\"" "$go_home/config.toml"
+grep -Fq "\"$go_home\" = \"deny\"" "$go_home/config.toml"
+if HARNESS_GO_ROOT="$fixture/source" CODEX_HOME="$fixture/source" "$ROOT/.ai-team/bin/prepare-codex-home" "$runtime" implementer >/dev/null 2>&1; then
+  echo "invalid Go distribution unexpectedly accepted" >&2
+  exit 1
+fi
+
 if CODEX_HOME="$fixture/source" "$ROOT/.ai-team/bin/prepare-codex-home" "$runtime" invalid-role >/dev/null 2>&1; then
   echo "invalid role unexpectedly accepted" >&2
   exit 1

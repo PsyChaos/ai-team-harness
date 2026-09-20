@@ -37,6 +37,15 @@ fi
 SOURCE_HOME="$(realpath -e -- "$SOURCE_HOME")"
 RUNTIME_ROOT="$(realpath -e -- "$RUNTIME_ROOT")"
 AUTH="$SOURCE_HOME/auth.json"
+GO_PERMISSION=""
+if [[ -n "${HARNESS_GO_ROOT:-}" ]]; then
+  GO_ROOT="$(realpath -e -- "$HARNESS_GO_ROOT")"
+  [[ -x "$GO_ROOT/bin/go" && -d "$GO_ROOT/src/runtime" ]] || {
+    echo "HARNESS_GO_ROOT must point to an installed Go distribution" >&2
+    exit 6
+  }
+  GO_PERMISSION="$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1]) + " = \"read\"")' "$GO_ROOT")"
+fi
 [[ -f "$AUTH" && ! -L "$AUTH" ]] || {
   echo "Codex file-based authentication is unavailable: $AUTH" >&2
   exit 5
@@ -63,6 +72,7 @@ description = "AI Team Harness worker with restricted reads"
 ":tmpdir" = "write"
 ":slash_tmp" = "write"
 "$CODEX_INSTALL_ROOT" = "read"
+$GO_PERMISSION
 "$PRIVATE_HOME" = "deny"
 
 [permissions.harness-worker.filesystem.":workspace_roots"]

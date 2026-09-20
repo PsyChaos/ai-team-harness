@@ -56,6 +56,17 @@ timeout 20 bwrap "${BWRAP_ARGS[@]}" \
   /bin/sh -ec 'printf "commit-ok\n" > git-commit-canary; git add -- git-commit-canary; git commit -qm "test: worker can commit locally"'
 [[ "$(git -C "$WORKDIR" show HEAD:git-commit-canary)" == commit-ok ]]
 
+if [[ -n "${HARNESS_GO_ROOT:-}" ]]; then
+  timeout 120 bwrap "${BWRAP_ARGS[@]}" \
+    env CODEX_HOME="$PRIVATE_HOME" CODEX_SQLITE_HOME="$PRIVATE_HOME/sqlite" \
+    GOROOT="$HARNESS_GO_ROOT" PATH="$HARNESS_GO_ROOT/bin:$PATH" \
+    GOCACHE=/tmp/ai-harness-go-build GOPATH=/tmp/ai-harness-go GOTOOLCHAIN=local \
+    codex sandbox --permission-profile harness-worker -- \
+    /bin/sh -ec 'printf "package main\nimport \"fmt\"\nfunc main() { fmt.Println(\"go-toolchain-ok\") }\n" > go-canary.go; go run go-canary.go; test ! -w "$GOROOT/bin/go"' \
+    > "$WORKDIR/go-toolchain.txt" 2>&1
+  grep -qx 'go-toolchain-ok' "$WORKDIR/go-toolchain.txt"
+fi
+
 set +e
 printf '%s\n' "$PROMPT" | timeout 120 bwrap "${BWRAP_ARGS[@]}" \
   env CODEX_HOME="$PRIVATE_HOME" CODEX_SQLITE_HOME="$PRIVATE_HOME/sqlite" \
@@ -68,7 +79,7 @@ if [[ ! -f "$WORKDIR/codex-workspace-canary" ]]; then
   sed -n '1,160p' "$OUTPUT" >&2
   exit 1
 fi
-if ! grep -E -q '"type":"command_execution".*auth\.json|(policy|directory|access)[^"\\n]*(deni|prohibit)|explicit[^"\\n]*deni' "$OUTPUT"; then
+if ! grep -E -q '"type":"command_execution".*auth\.json|(policy|directory|access|permission)[^"\\]*(deni|prohibit|forbid|block)|explicit[^"\\]*deni' "$OUTPUT"; then
   echo "FAIL: Codex neither attempted nor explicitly rejected the auth-read canary" >&2
   sed -n '1,160p' "$OUTPUT" >&2
   exit 1

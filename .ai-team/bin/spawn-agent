@@ -24,6 +24,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib.sh"
 load_runtime
+SYSTEMD_TOOLCHAIN_ENV=()
+if [[ -n "${HARNESS_GO_ROOT:-}" ]]; then
+  HARNESS_GO_ROOT="$(realpath -e -- "$HARNESS_GO_ROOT")"
+  [[ -x "$HARNESS_GO_ROOT/bin/go" && -d "$HARNESS_GO_ROOT/src/runtime" ]] || {
+    echo "HARNESS_GO_ROOT must point to an installed Go distribution" >&2
+    exit 9
+  }
+  export HARNESS_GO_ROOT
+  export PATH="$HARNESS_GO_ROOT/bin:$PATH"
+  # /tmp is a private, writable mount for each worker.
+  SYSTEMD_TOOLCHAIN_ENV+=(--setenv=GOROOT="$HARNESS_GO_ROOT"
+    --setenv=GOCACHE=/tmp/ai-harness-go-build --setenv=GOPATH=/tmp/ai-harness-go)
+fi
 HOST_CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 SECRET_FILE="${HARNESS_SECRETS_FILE:-$(harness_default_secrets_file)}"
 RUNTIME_DIR="/run/user/$(id -u)"
@@ -195,6 +208,7 @@ systemd-run --user \
   --setenv=HARNESS_GEMINI_APPROVAL_MODE="${HARNESS_GEMINI_APPROVAL_MODE:-yolo}" \
   --setenv=HARNESS_GEMINI_USE_SANDBOX="${HARNESS_GEMINI_USE_SANDBOX:-1}" \
   "${SYSTEMD_PROVIDER_ENV[@]}" \
+  "${SYSTEMD_TOOLCHAIN_ENV[@]}" \
   "$BWRAP" \
     "${BWRAP_ARGS[@]}" \
     "$RUNNER"
