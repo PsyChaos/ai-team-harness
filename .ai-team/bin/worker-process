@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Narrow native worker process adapter. Lifecycle, paths and policy live in Go.
+set -euo pipefail
+operation="${1:?operation required}"
+shift
+case "$operation" in
+  start) exec systemd-run "$@" ;;
+  stop)
+    [[ "$#" -eq 1 && "$1" =~ ^ai-harness-[0-9a-f]{32}-issue-[1-9][0-9]*-(implementer|reviewer|security-reviewer)$ ]] || exit 2
+    # A collected unit is already stopped. Other failures must fail closed.
+    state="$(systemctl --user show "$1.service" --property=LoadState --value)"
+    [[ "$state" == not-found ]] && exit 0
+    exec systemctl --user stop "$1.service"
+    ;;
+  *) exit 2 ;;
+esac
