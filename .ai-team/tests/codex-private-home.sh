@@ -6,6 +6,12 @@ fixture="$(mktemp -d -t codex-home-fixture.XXXXXXXX)"
 runtime="$(mktemp -d -t codex-runtime-fixture.XXXXXXXX)"
 trap 'rm -rf -- "$fixture" "$runtime"' EXIT
 
+# This offline config test only needs an executable path, never a live provider.
+mkdir "$fixture/bin"
+printf '#!/bin/sh\nexit 99\n' > "$fixture/bin/codex"
+chmod 700 "$fixture/bin/codex"
+export PATH="$fixture/bin:$PATH"
+
 mkdir -m 700 "$fixture/source"
 printf '{"tokens":{"access_token":"test-only"}}\n' > "$fixture/source/auth.json"
 printf 'model = "must-not-be-copied"\n' > "$fixture/source/config.toml"
@@ -29,6 +35,7 @@ grep -q '^default_permissions = "harness-worker"$' "$private_home/config.toml"
 grep -q '^":minimal" = "read"$' "$private_home/config.toml"
 grep -q '^"\." = "write"$' "$private_home/config.toml"
 grep -q '^"\.git" = "write"$' "$private_home/config.toml"
+grep -Fq "\"$fixture/bin\" = \"read\"" "$private_home/config.toml"
 grep -Fq "\"$private_home\" = \"deny\"" "$private_home/config.toml"
 [[ -d "$private_home/project-config" ]]
 
