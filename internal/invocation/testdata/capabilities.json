@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-09-21",
+  "kind": "documentation-derived support subset; not live model availability",
+  "sources": [
+    "https://developers.openai.com/api/docs/models/gpt-5.4",
+    "https://developers.openai.com/codex/config-reference/",
+    "https://code.claude.com/docs/en/model-config",
+    "https://platform.claude.com/docs/en/build-with-claude/effort"
+  ],
+  "codex_config_key": "model_reasoning_effort",
+  "supported": [
+    {"provider":"codex","version":"0.154.0","model":"gpt-5.4","efforts":["low","medium","high","xhigh"]},
+    {"provider":"claude","version":"2.1.235","model":"claude-opus-4-6","efforts":["low","medium","high","max"]},
+    {"provider":"claude","version":"2.1.235","model":"claude-sonnet-4-6","efforts":["low","medium","high","max"]}
+  ]
+}

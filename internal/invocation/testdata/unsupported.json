@@ -1,0 +1,11 @@
+{
+  "version": "2.1.235",
+  "requested": {
+    "work_id": "issue-10",
+    "provider": "claude",
+    "model": "claude-opus-4-6",
+    "effort": "xhigh",
+    "capability_profile": "strong"
+  },
+  "reason": "unsupported effort \"xhigh\" for claude/claude-opus-4-6"
+}
