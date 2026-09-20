@@ -55,7 +55,36 @@ than only on initial load. These new browser assertions are syntax-checked but
 Socket restrictions cannot be lifted by this worker, so acceptance remains
 partial until validation runs in a provisioned environment.
 
-### Execution instructions
+### Subsequent retry verification (2026-09-20, 18:39 UTC)
+
+Rechecked commit `ad26cd1` in the assigned issue-4 branch. No application or
+browser-script changes were warranted by the available evidence. This attempt
+remains **PARTIAL**:
+
+- `GOCACHE=/tmp/issue-4-go-cache go test ./...`: PASS; dashboard 0.004s;
+  command package has no test files.
+- `GOCACHE=/tmp/issue-4-go-cache go vet ./...`: PASS, exit 0.
+- `GOCACHE=/tmp/issue-4-go-cache go build -o /tmp/issue-4-harness ./cmd/harness`:
+  PASS, exit 0.
+- `node --check scripts/check-dashboard.mjs` and
+  `node --check internal/dashboard/assets/app.js`: PASS, exit 0.
+- `git diff --check` and
+  `git diff 3e9f1a6 --exit-code -- 'theme/Factory Floor.dc.html' theme/support.js`:
+  PASS, exit 0; preserved references are unchanged.
+- `/tmp/issue-4-harness`: FAIL, exit 1, at 18:39:26 UTC:
+  `listen tcp 127.0.0.1:8080: socket: operation not permitted`.
+- `node scripts/check-dashboard.mjs`: FAIL, exit 1:
+  `ERR_MODULE_NOT_FOUND` for `playwright`. No `chromium`, `chromium-browser`,
+  `google-chrome`, or `playwright` executable was found on PATH.
+
+This worker's permission policy does not permit escalation. Completing the
+remaining acceptance checks requires a provisioned validation environment with
+loopback sockets, Playwright, Chromium, and the reference's React dependencies.
+No screenshot diff, manual keyboard pass, browser reduced-motion check, or
+offline network observation was completed in this attempt. The passing static
+and handler checks do not substitute for those browser checks.
+
+### Running the browser checks
 
 Use an environment with Playwright and its Chromium already installed; these
 are review tools, not dashboard dependencies. Serve the application above and
