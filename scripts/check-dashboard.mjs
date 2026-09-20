@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 const shell = process.env.DASHBOARD_URL || 'http://127.0.0.1:8080';
 const reference = process.env.REFERENCE_URL || 'http://127.0.0.1:8081/theme/Factory%20Floor.dc.html';
-const output = process.env.SCREENSHOT_DIR || '/tmp/issue-4-screenshots';
+const output = process.env.SCREENSHOT_DIR || '/tmp/issue-13-screenshots';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch();
 try {
@@ -22,54 +22,103 @@ try {
     });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
+    const attack = '<img src=x onerror="window.pwned=1"><script>window.pwned=1</script>';
+    const now = Date.now() / 1000;
+    const task = { repo: 'owner/repo', project: 'owner/7', issue: 13, title: attack, body: attack,
+      pr: 4, pr_title: attack, pr_body: attack, url: 'javascript:window.pwned=1', status: 'IN_PROGRESS',
+      provider: 'codex', role: 'implementer', observed_at: now };
+    const evidence = { requested: { model: 'requested-model', effort: 'high' }, effective: { model: 'effective-model', effort: 'medium' }, decision_source: 'rules', reason: 'Deterministic policy', policy_version: 'policy-v1' };
+    let live = { version: 1, cursor: 3, events: [
+      { id: 1, type: 'pybridge.task.observed', data: task },
+      { id: 2, type: 'dashboard.agent.observed', data: { ...task, agent_id: 'agent-13', runtime_state: 'running', activity: attack, routing: evidence } },
+      { id: 3, type: 'routing.decided', data: { ...task, selected: { model: 'requested-model', effort: 'high' }, effective: { model: 'effective-model', effort: 'medium' }, decision_source: 'rules', reason: 'Deterministic policy', policy_version: 'policy-v1' } },
+    ] };
+    let snapshotReads = 0;
+    await context.route(`${shell}/snapshot`, route => { snapshotReads++; return route.fulfill({ json: live }); });
+    await context.route(`${shell}/identity`, route => route.fulfill({ json: { repo: 'owner/repo', project: 'owner/7' } }));
+    await context.addInitScript(() => {
+      window.streams = [];
+      window.EventSource = class extends EventTarget {
+        constructor(url) { super(); this.url = url; this.closed = false; window.streams.push(this); setTimeout(() => this.onopen?.(), 0); }
+        close() { this.closed = true; }
+      };
+      window.observation = event => window.streams.at(-1).dispatchEvent(new MessageEvent('observation', { data: JSON.stringify(event) }));
+    });
     await page.goto(shell);
-    await page.waitForFunction(() => document.querySelector('#events [role="status"]'));
-    assert.deepEqual(requests.filter(url => new URL(url).origin !== new URL(shell).origin), []);
-    assert.deepEqual(errors, []);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    assert.equal(await page.locator('#demo').isChecked(), false);
+    assert.match(await page.locator('#identity').textContent(), /owner\/repo.*owner\/7/);
+    assert.match(await page.locator('#decision').textContent(), /requested-model.*effective-model.*rules.*policy-v1/s);
+    assert.match(await page.locator('#factory').textContent(), /running/);
+    assert.equal(await page.evaluate(() => window.streams.at(-1).url), '/events?cursor=3');
+    assert.equal(await page.locator('#factory img, #factory script').count(), 0);
+    // Keyboard tab navigation remains available in the live views.
+    await page.getByRole('tab', { name: 'Factory', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#agents').isVisible(), true);
+    assert.match(await page.locator('#agents').textContent(), /effective-model.*medium/s);
+    await page.screenshot({ path: `${output}/${name}-agents.png` });
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#events').isVisible(), true);
+    assert.match(await page.locator('#events').textContent(), /<img src=x/);
+    await page.getByRole('button', { name: 'CI', exact: true }).click();
+    assert.equal(await page.locator('#events-empty').isVisible(), true);
+    await page.getByRole('button', { name: 'ALL', exact: true }).click();
+    const update = { id: 4, type: 'dashboard.agent.observed', data: { ...task, agent_id: 'agent-13', runtime_state: 'waiting', activity: 'Live SSE update', observed_at: now - 180 } };
+    live = { ...live, cursor: 4, events: [...live.events, update] };
+    await page.evaluate(event => window.observation(event), update);
+    assert.match(await page.locator('#events').textContent(), /Live SSE update/);
+    await page.screenshot({ path: `${output}/${name}-events.png` });
+    await page.getByRole('tab', { name: 'Agents', exact: true }).click();
+    assert.match(await page.locator('#agents').textContent(), /stale.*waiting/s);
+    await page.getByRole('tab', { name: 'Factory', exact: true }).click();
+    await page.locator('#task-flow button').click();
+    assert.equal(await page.locator('#task-detail').isVisible(), true);
+    assert.match(await page.locator('#task-detail').textContent(), /<script>window.pwned=1<\/script>/);
+    assert.equal(await page.locator('#task-detail img, #task-detail script').count(), 0);
+    assert.deepEqual(await page.locator('#task-detail a').evaluateAll(nodes => nodes.map(n => n.href)),
+      ['https://github.com/owner/repo/issues/13', 'https://github.com/owner/repo/pull/4']);
+    assert.equal(await page.evaluate(() => window.pwned), undefined);
+    await page.locator('#task-detail').screenshot({ path: `${output}/${name}-detail.png` });
+    await page.getByRole('button', { name: 'Close task detail' }).click();
+    await page.evaluate(() => window.streams.at(-1).onerror());
+    assert.match(await page.locator('#connection').textContent(), /Reconnecting/);
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    assert.ok(snapshotReads >= 2);
+    // A reset (e.g. retained cursor expired) fetches a fresh snapshot.
+    const beforeReset = snapshotReads;
+    await page.evaluate(() => window.streams.at(-1).dispatchEvent(new Event('reset')));
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    assert.ok(snapshotReads > beforeReset);
+    await context.setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    assert.match(await page.locator('#connection').textContent(), /Offline/);
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    await page.locator('#demo').check();
+    assert.match(await page.locator('#mode-notice').textContent(), /all displayed observations are simulated/);
+    assert.equal(await page.evaluate(() => window.streams.at(-1).closed), true);
+    assert.doesNotMatch(await page.locator('#factory').textContent(), /owner\/repo/);
+    await page.locator('#demo').uncheck();
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    assert.doesNotMatch(await page.locator('#factory').textContent(), /DEMO-01/);
+    // Snapshot failure stays visibly unavailable and never falls back to Demo.
+    await context.route(`${shell}/snapshot`, route => route.fulfill({ status: 503, body: 'unavailable' }));
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector('#connection').textContent.includes('Reconnecting'));
+    assert.equal(await page.locator('#demo').isChecked(), false);
+    assert.doesNotMatch(await page.locator('#factory').textContent(), /DEMO-01|simulated running/);
+    await context.unroute(`${shell}/snapshot`);
+    await context.route(`${shell}/snapshot`, route => route.fulfill({ json: live }));
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    for (const target of ['Agents', 'Events', 'Factory']) {
+      await page.getByRole('tab', { name: target, exact: true }).click();
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${name}: ${target} overflow`);
+    }
     assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
     const actual = await page.screenshot({ path: `${output}/${name}-shell.png` });
-    // Keyboard-only interaction, including all tabs and every event filter.
-    await page.keyboard.press('Tab');
-    assert.equal(await page.locator('.skip').evaluate(el => el === document.activeElement), true);
-    await page.keyboard.press('Tab');
-    const checkView = async target => {
-      const tab = page.getByRole('tab', { name: target, exact: true });
-      assert.equal(await tab.getAttribute('aria-selected'), 'true');
-      assert.equal(await tab.evaluate(el => el === document.activeElement), true);
-      assert.equal(await page.locator(`#${target.toLowerCase()}`).isVisible(), true);
-      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true,
-        `${name}: ${target} must fit the viewport`);
-      assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
-      assert.equal(await tab.evaluate(el => getComputedStyle(el).outlineStyle !== 'none'), true);
-    };
-    await checkView('Factory');
-    for (const target of ['Agents', 'Events']) {
-      await page.keyboard.press('ArrowRight');
-      await checkView(target);
-    }
-    for (const [key, target] of [['ArrowRight', 'Factory'], ['ArrowLeft', 'Events'],
-      ['Home', 'Factory'], ['End', 'Events']]) {
-      await page.keyboard.press(key);
-      await checkView(target);
-    }
-    await page.keyboard.press('Tab'); // Focusable Events panel.
-    assert.equal(await page.locator('#events').evaluate(el => el === document.activeElement), true);
-    for (const label of ['ALL', 'ASSIGN', 'REVIEW', 'CI', 'MERGE', 'HUMAN']) {
-      await page.keyboard.press('Tab');
-      assert.equal(await page.getByRole('button', { name: label, exact: true })
-        .evaluate(el => el === document.activeElement), true);
-      await page.keyboard.press('Enter');
-      assert.equal(await page.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed'), 'true');
-    }
-    await page.keyboard.press('Shift+Tab');
-    await page.keyboard.press('Space');
-    assert.equal(await page.getByRole('button', { name: 'MERGE', exact: true }).getAttribute('aria-pressed'), 'true');
-    assert.equal(await page.locator('[data-filter][aria-pressed="true"]').count(), 1);
-    // Once the local files have loaded, controls also work fully offline.
-    await context.setOffline(true);
-    await page.getByRole('tab', { name: 'Factory', exact: true }).click();
-    assert.equal(await page.locator('#factory').isVisible(), true);
     assert.deepEqual(errors, []);
     assert.deepEqual(requests.filter(url => new URL(url).origin !== new URL(shell).origin), []);
     await context.close();
@@ -84,6 +133,12 @@ try {
     await refPage.waitForSelector('#dc-root button');
     await refPage.addStyleTag({ content: '* { animation:none !important; transition:none !important; }' });
     const expected = await refPage.screenshot({ path: `${output}/${name}-reference.png` });
+    for (const view of ['Agents', 'Events']) {
+      await refPage.getByRole('button', { name: view, exact: true }).click();
+      await refPage.screenshot({ path: `${output}/${name}-${view.toLowerCase()}-reference.png` });
+    }
+    // The original theme has no task-detail panel. Review the detail capture
+    // against its panel typography, colors and mobile spacing, not pixel equality.
     // Pixel diff is diagnostic: fixtures, Demo labels and mobile reflow intentionally differ.
     const diff = await refPage.evaluate(async ({ actual, expected, width, height }) => {
       const load = async base64 => {

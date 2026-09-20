@@ -1,4 +1,4 @@
-// Command harness serves the demo dashboard or discovers provider capabilities.
+// Command harness serves the live observation dashboard or discovers provider capabilities.
 package main
 
 import (
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/PsyChaos/ai-team-harness/internal/dashboard"
+	"github.com/PsyChaos/ai-team-harness/internal/journal"
 	"github.com/PsyChaos/ai-team-harness/internal/registry"
 )
 
@@ -26,14 +27,41 @@ func main() {
 		return
 	}
 	listen := flag.String("listen", defaultListen, "dashboard listen address")
+	journalPath := flag.String("journal", "", "read-only observation journal file; never selected by HTTP clients")
+	repo := flag.String("repo", "", "repository owner/name displayed as installation identity")
+	project := flag.String("project", "", "project identity displayed in this installation")
 	flag.Parse()
+	var api http.Handler
+	if *journalPath != "" {
+		// Match the bridge's maximum wire event size; no input is ever written.
+		if _, err := os.Stat(*journalPath); err != nil {
+			log.Fatal(err)
+		}
+		source, err := journal.Open(*journalPath, journal.Limits{Retain: 512, Pending: 1, MaxEventBytes: 1 << 20})
+		if err != nil {
+			log.Fatal(err)
+		}
+		api, err = source.Handler(journal.HTTPOptions{MaxStreams: 32, WriteTimeout: 5 * time.Second, Heartbeat: 15 * time.Second})
+		if err != nil {
+			log.Fatal(err)
+		}
+		go func() {
+			ticker := time.NewTicker(time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				if err := source.Reload(); err != nil {
+					log.Printf("journal refresh failed: %v", err)
+				}
+			}
+		}()
+	}
 	server := &http.Server{
 		Addr:              *listen,
-		Handler:           dashboard.Handler(),
+		Handler:           dashboard.WithJournal(api, *repo, *project),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	log.Printf("Factory Floor Demo: http://%s (offline fixtures only)", *listen)
+	log.Printf("Factory Floor: http://%s (read-only observations)", *listen)
 	log.Print("Go dashboard only; use .ai-team/bin/coordinator-broker for execution")
 	log.Fatal(server.ListenAndServe())
 }

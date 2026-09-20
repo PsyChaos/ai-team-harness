@@ -66,7 +66,8 @@ journal there; it logs the path to stderr and emits the journal snapshot to
 stdout. Input paths can never be selected as output destinations. The journal
 is deliberately retained for inspection; remove its temporary directory when
 finished. Observation is read-only with respect to Python and GitHub, not with
-respect to this separate journal. The existing dashboard remains a fixture demo;
+respect to this separate journal. The dashboard can now follow this journal using `cmd/harness -journal PATH`
+(see [live dashboard](validation/issue-13-dashboard.md));
 a consumer can use these events through the existing journal HTTP handler.
 
 ## Validation and provenance

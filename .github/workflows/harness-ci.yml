@@ -25,6 +25,12 @@ jobs:
           go build ./...
           go vet ./...
           go test -race ./...
+      - name: Dashboard projection and syntax
+        run: |
+          node scripts/check-dashboard-model.mjs
+          node --input-type=module --check < internal/dashboard/assets/app.js
+          node --input-type=module --check < internal/dashboard/assets/model.js
+          node --check scripts/check-dashboard.mjs
       - name: Recorded contract provenance
         run: |
           python3 internal/domain/testdata/capture.py --output "$RUNNER_TEMP/contracts"

@@ -2,7 +2,8 @@
 
 `internal/journal` is an observation read model. It does not route or execute
 work. GitHub remains authoritative. The temporary [Python observer bridge](python-observer-bridge.md)
-produces real-source observations; `cmd/harness` still serves the fixture demo.
+produces real-source observations; `cmd/harness -journal PATH` serves live read-only observations. See
+[dashboard operation and validation](validation/issue-13-dashboard.md).
 
 Create a journal with `journal.Open(path, journal.Limits{Retain: 1024,
 Pending: 128, MaxEventBytes: 16384})`. The parent directory must already exist,
