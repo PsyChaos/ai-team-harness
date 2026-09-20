@@ -1,0 +1,85 @@
+{
+  "bootstrap_id": "474bde522a1fb0f8e5b73314",
+  "complete": true,
+  "nodes": {
+    "first": {
+      "digest": "209447fdc0dc0e5e50840ad56e42a062e7a6a5955e6c5b36f960bccb468721da",
+      "number": 3,
+      "url": "https://github.com/test/repo/issues/3"
+    },
+    "next": {
+      "digest": "8979d64753dd806881e70033c06d586458ed140b844e3a36fe0b25d0df8a9aef",
+      "number": 4,
+      "url": "https://github.com/test/repo/issues/4"
+    },
+    "phase": {
+      "digest": "7c8b2d86fc16716bb574672f27b25b48533833f96144f87eea1471143cdc0163",
+      "number": 2,
+      "url": "https://github.com/test/repo/issues/2"
+    }
+  },
+  "number": "1",
+  "owner": "test",
+  "plan": {
+    "nodes": [
+      {
+        "acceptance": [
+          "It works"
+        ],
+        "depends_on": [],
+        "description": "Bounded scope and evidence",
+        "id": "phase",
+        "kind": "phase",
+        "parent": null,
+        "priority": "P1",
+        "risk": "LOW",
+        "title": "phase",
+        "validation": [
+          "Run tests"
+        ],
+        "work_type": "Backend"
+      },
+      {
+        "acceptance": [
+          "It works"
+        ],
+        "depends_on": [],
+        "description": "Bounded scope and evidence",
+        "id": "first",
+        "kind": "task",
+        "parent": "phase",
+        "priority": "P1",
+        "risk": "LOW",
+        "title": "first",
+        "validation": [
+          "Run tests"
+        ],
+        "work_type": "Backend"
+      },
+      {
+        "acceptance": [
+          "It works"
+        ],
+        "depends_on": [
+          "first"
+        ],
+        "description": "Bounded scope and evidence",
+        "id": "next",
+        "kind": "task",
+        "parent": "phase",
+        "priority": "P1",
+        "risk": "LOW",
+        "title": "next",
+        "validation": [
+          "Run tests"
+        ],
+        "work_type": "Backend"
+      }
+    ],
+    "summary": "Build a useful product",
+    "title": "Test Project"
+  },
+  "publisher": "publisher",
+  "repo": "test/repo",
+  "signature": "1fde24e205b690ee68e2f65441eef89d1d1667491c13b5e825032ecccb162335"
+}

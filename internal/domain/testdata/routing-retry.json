@@ -1,0 +1,20 @@
+{
+  "decisions": {
+    "provider": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "codex"
+    },
+    "strategy": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "replan"
+    }
+  },
+  "engine": "rules",
+  "kind": "retry"
+}
