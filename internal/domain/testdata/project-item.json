@@ -1,0 +1,68 @@
+{
+  "content": {
+    "blockedBy": {
+      "complete": true,
+      "nodes": [
+        {
+          "number": 4,
+          "repository": {
+            "nameWithOwner": "acme/widget"
+          },
+          "state": "CLOSED",
+          "title": "Blocker 4",
+          "url": "https://github.com/acme/widget/issues/4"
+        }
+      ]
+    },
+    "body": "Body 7",
+    "id": "I_7",
+    "number": 7,
+    "repository": {
+      "nameWithOwner": "acme/widget"
+    },
+    "state": "OPEN",
+    "title": "Task 7",
+    "type": "Issue",
+    "url": "https://github.com/acme/widget/issues/7"
+  },
+  "fieldValues": {
+    "nodes": [
+      {
+        "__typename": "ProjectV2ItemFieldSingleSelectValue",
+        "field": {
+          "name": "Harness Status"
+        },
+        "name": "READY"
+      },
+      {
+        "__typename": "ProjectV2ItemFieldSingleSelectValue",
+        "field": {
+          "name": "Provider"
+        },
+        "name": "OpenAI"
+      },
+      {
+        "__typename": "ProjectV2ItemFieldSingleSelectValue",
+        "field": {
+          "name": "Model"
+        },
+        "name": "profile:balanced"
+      },
+      {
+        "__typename": "ProjectV2ItemFieldSingleSelectValue",
+        "field": {
+          "name": "Agent Role"
+        },
+        "name": "Implementer"
+      },
+      {
+        "__typename": "ProjectV2ItemFieldSingleSelectValue",
+        "field": {
+          "name": "Risk"
+        },
+        "name": "LOW"
+      }
+    ]
+  },
+  "id": "PVTI_7"
+}

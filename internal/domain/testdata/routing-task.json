@@ -1,0 +1,34 @@
+{
+  "decisions": {
+    "model_profile": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "strong"
+    },
+    "provider": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "codex"
+    },
+    "review_mode": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "security"
+    },
+    "work_type": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "Backend"
+    }
+  },
+  "engine": "rules",
+  "kind": "task"
+}

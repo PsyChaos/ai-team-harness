@@ -1,0 +1,20 @@
+{
+  "decisions": {
+    "provider": {
+      "source": "rules",
+      "value": "codex"
+    },
+    "strategy": {
+      "confidence": 0.95,
+      "probabilities": {
+        "replan": 0.95
+      },
+      "source": "jev",
+      "threshold": 0.8,
+      "value": "replan"
+    }
+  },
+  "engine": "jev",
+  "kind": "retry",
+  "model": "fixture-judgment"
+}
