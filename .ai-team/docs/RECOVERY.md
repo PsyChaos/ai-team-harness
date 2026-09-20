@@ -20,6 +20,36 @@ Resume preserves the clone, audits the previous attempt count, and grants one
 additional implementation attempt. It never approves acceptance or merges code.
 Do not repeatedly resume an unchanged failure.
 
+WAITING_HUMAN means intervention is needed; it is not an approval request and
+does not waive a gate. Before resuming, identify the missing input, process
+failure, or actual product/security decision. Never restart an unchanged failure.
+
+For unavailable sandbox inputs, the broker can supply bounded signed context:
+
+```bash
+.ai-team/bin/coordinator-broker record-validation-context --issue N --report /absolute/exact-head-report.md
+.ai-team/bin/coordinator-broker capture-observer-context --issue N
+```
+
+The first command accepts an independently obtained report naming the current
+commit. The second captures actual broker snapshot and normalized GitHub data
+for offline observation checks. Both supply input/evidence only, never an
+approval. Implementers and reviewers receive the context only for its bound
+HEAD. The worker must still validate its code against supplied inputs; review
+and CI remain required. Then use `resume` with the corrected cause.
+
+For an exhausted malformed/missing reviewer result after correcting its cause:
+
+```bash
+.ai-team/bin/coordinator-broker resume-review --issue N --role security-reviewer --reason 'Corrected output contract'
+```
+
+This grants exactly one review-process retry, preserves previous findings in the
+new pack, and checks the PR, commit and implementation evidence bindings. It
+refuses valid reviews: CHANGES_REQUESTED must go to implementation, never be
+discarded as a format failure. Security reviewers receive the same mandatory
+structured output contract as ordinary reviewers.
+
 Complete local implementations may report VALIDATION_PENDING, keeping only
 `- [ ] [external:ci] ...` or `- [ ] [external:browser] ...` unchecked. Publication
 precedes hosted CI. Ordinary incomplete implementation still fails the handoff.

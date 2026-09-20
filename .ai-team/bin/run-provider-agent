@@ -64,6 +64,10 @@ SELECTED_MODEL="$(resolve_model "$PROVIDER" "$MODEL_PROFILE")"
 
 PROMPT="$(
   cat "$SKILL_FILE"
+  if [[ "$ROLE" == "security-reviewer" ]]; then
+    printf '\n\n--- REQUIRED REVIEW RESULT CONTRACT ---\n\n'
+    cat "$HARNESS_ROOT/.agents/skills/reviewing-changes/SKILL.md"
+  fi
   printf '\n\n--- ASSIGNED WORK PACK ---\n\n'
   cat "$PACK"
   printf '\n\n--- RUNTIME ROUTING ---\nProvider: %s\nModel profile: %s\n' "$PROVIDER" "$MODEL_PROFILE"
