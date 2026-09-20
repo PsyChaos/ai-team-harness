@@ -34,9 +34,58 @@ authenticated/unauthenticated and malformed auth responses, disabled providers a
 models, missing Gemini, cancellation, config validation, CLI-default labels and
 unknown budgets versus explicit zero. No test requires provider credentials.
 
-The worker sandbox on 2026-09-20 reports Codex missing from PATH, Claude Code
-2.1.84 unauthenticated, and Gemini missing. Direct `node` execution of the installed
-Codex package's `bin/codex.js --version` confirms 0.154.0; `login --help` confirms
-the status subcommand. The expected authenticated Codex/Claude 2.1.235 discovery
-must still be run by the coordinator in its normal host environment. No credential
-files or sandbox restrictions were modified to obtain a passing result.
+### Supplied host report (source commit only)
+
+The issue #5 retry Task Pack supplies an independent host report titled
+“Issue #5 independent host validation”, attributed to OpenAI Codex subagent
+`/root/review_final_refactor`. It reports PASS on the authenticated coordinator
+host on 2026-09-20 for source commit
+`f0403d0c7c6f7fecb853c2efecf0940b6e6276aa`, with a clean checkout before and after.
+This is supplied evidence, not a host run performed by this retry worker.
+
+The report records successful `go build -o /tmp/issue-5-host-discovery ./cmd/harness`,
+`go test ./internal/registry/...` (`0.032s`),
+`/tmp/issue-5-host-discovery discover .ai-team/config/registry.json` (exit 0),
+and `git diff --check`, using Go 1.27.0.
+
+| Provider | Reported version | Installed | Auth | Available | Reported discovery time (UTC) |
+| --- | --- | --- | --- | --- | --- |
+| Codex | codex-cli 0.154.0 | true | authenticated | true | 2026-09-20T20:49:43.498458352Z |
+| Claude | 2.1.235 (Claude Code) | true | authenticated | true | 2026-09-20T20:49:43.633043043Z |
+| Gemini | empty | false | unknown | false | 2026-09-20T20:49:44.014529188Z |
+
+Reported executable paths were
+`/home/heisenberg/.nvm/versions/node/v25.8.1/bin/codex` and
+`/home/heisenberg/.local/bin/claude`; Gemini was absent from PATH. The report
+records only version/auth-status probes, CLI-default labels without model IDs
+or efforts, and null budgets. No model work or Gemini invocation was reported.
+
+This supersedes the old documentation's statement that no authenticated host
+check had been performed. It does **not** establish canonical registration: the
+rejecting review found that the broker's canonical external-validation field
+said no report was registered. This worker cannot verify the supplied report's
+signature or repair that broker field. The broker must register and verify host
+evidence for the submitted HEAD before marking the live-host criterion complete.
+The source-commit report above does not directly validate a later documentation
+commit, even though this retry changes no implementation or config.
+
+### Retry worker checks
+
+Against the source commit above, this worker ran the following commands with
+`GOROOT=/home/heisenberg/.goenv/versions/1.27.0`,
+`GOCACHE=/tmp/issue-5-retry-go-cache` and
+`GOMODCACHE=/tmp/issue-5-retry-go-mod`, using that GOROOT's `bin/go`:
+
+- `go test ./internal/registry/...` — exit 0, `ok` (`0.024s`).
+- `go build -o /tmp/issue-5-retry-discovery ./cmd/harness` — exit 0.
+- `/tmp/issue-5-retry-discovery discover .ai-team/config/registry.json` — exit 0;
+  loaded all three providers, labeled all models `CLI default`, omitted model IDs,
+  preserved empty efforts and null budgets.
+
+The retry discovery timestamps span 2026-09-20T21:43:25.452251915Z through
+2026-09-20T21:43:26.257442651Z. This sandbox sees Codex and Gemini missing from
+PATH, and `/usr/bin/claude` version 2.1.84 unauthenticated; all are unavailable.
+These results demonstrate fail-closed discovery here, not the required host
+availability. They describe a different environment from the supplied host report.
+No credentials or sandbox restrictions were changed. Hosted CI and canonical
+host-evidence registration remain external handoff requirements.
