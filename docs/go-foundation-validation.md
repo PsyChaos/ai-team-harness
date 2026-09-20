@@ -28,3 +28,27 @@ fixture comparison, the Python suite, and shell checks in one job. This local
 validation is not a hosted CI run and used Go 1.27.0 rather than the workflow's
 Go 1.23.0. The coordinator must publish the commits and obtain a passing hosted
 CI run before merge. This worker did not query GitHub, push, or merge.
+
+## Retry of worker-failure digest 0e503a621e478e7f
+
+Revalidated parent commit `de6a949ee56384303ceaf788d5d1c4225b171d6c` on
+2026-09-20. No code or workflow defect was identified in the bounded retry
+evidence, so this attempt changes only this evidence document.
+
+- `go build ./... && go vet ./... && go test -race ./...`: exit 0 with
+  Go 1.27.0; domain race tests passed in 1.019s and all seven packages compiled.
+- `python3 -m unittest discover -s .ai-team/tests -p 'test_*.py'`: exit 0,
+  64 tests passed in 30.816s.
+- All three shell boundary commands listed above: exit 0, each reported PASS.
+- `python3 internal/domain/testdata/capture.py --output /tmp/issue-3-retry-contracts`
+  followed by `diff -u` against each committed JSON fixture: exit 0; all seven
+  matched.
+- Workflow-equivalent Bash syntax checks and `git diff --check`: exit 0.
+
+The remaining acceptance evidence is a hosted run of `Harness CI` on the
+published implementation revision. The assigned retry pack forbids querying
+GitHub, and the implementer role forbids pushing. Local reruns cannot resolve
+that publication/CI dependency. Coordinator handoff: publish the branch, obtain
+the combined workflow result, and attach its run URL and tested SHA before
+claiming the final acceptance criterion. Do not infer hosted CI success from
+these local results; Go 1.23.0 remains untested locally.
