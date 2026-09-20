@@ -1,0 +1,276 @@
+{
+  "fields": [
+    {
+      "id": "F0",
+      "name": "Harness Status",
+      "options": [
+        {
+          "id": "O0_0",
+          "name": "BACKLOG"
+        },
+        {
+          "id": "O0_1",
+          "name": "BLOCKED"
+        },
+        {
+          "id": "O0_2",
+          "name": "READY"
+        }
+      ]
+    },
+    {
+      "id": "F1",
+      "name": "Risk",
+      "options": [
+        {
+          "id": "O1_0",
+          "name": "LOW"
+        },
+        {
+          "id": "O1_1",
+          "name": "HIGH"
+        },
+        {
+          "id": "O1_2",
+          "name": "MEDIUM"
+        },
+        {
+          "id": "O1_3",
+          "name": "CRITICAL"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "name": "Priority",
+      "options": [
+        {
+          "id": "O2_0",
+          "name": "P0"
+        },
+        {
+          "id": "O2_1",
+          "name": "P1"
+        },
+        {
+          "id": "O2_2",
+          "name": "P2"
+        },
+        {
+          "id": "O2_3",
+          "name": "P3"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "name": "Work Type",
+      "options": [
+        {
+          "id": "O3_0",
+          "name": "Architecture"
+        },
+        {
+          "id": "O3_1",
+          "name": "Bug"
+        },
+        {
+          "id": "O3_2",
+          "name": "Mobile"
+        },
+        {
+          "id": "O3_3",
+          "name": "Frontend"
+        },
+        {
+          "id": "O3_4",
+          "name": "Backend"
+        },
+        {
+          "id": "O3_5",
+          "name": "Database"
+        },
+        {
+          "id": "O3_6",
+          "name": "Refactor"
+        },
+        {
+          "id": "O3_7",
+          "name": "DevOps"
+        },
+        {
+          "id": "O3_8",
+          "name": "Test"
+        },
+        {
+          "id": "O3_9",
+          "name": "Security"
+        },
+        {
+          "id": "O3_10",
+          "name": "Documentation"
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "name": "Agent Role",
+      "options": [
+        {
+          "id": "O4_0",
+          "name": "Planner"
+        },
+        {
+          "id": "O4_1",
+          "name": "Implementer"
+        }
+      ]
+    },
+    {
+      "id": "F5",
+      "name": "Provider",
+      "options": [
+        {
+          "id": "O5_0",
+          "name": "Claude"
+        },
+        {
+          "id": "O5_1",
+          "name": "OpenAI"
+        },
+        {
+          "id": "O5_2",
+          "name": "Gemini"
+        }
+      ]
+    },
+    {
+      "id": "TModel",
+      "name": "Model"
+    },
+    {
+      "id": "TRetry Count",
+      "name": "Retry Count"
+    },
+    {
+      "id": "TEvidence",
+      "name": "Evidence"
+    }
+  ],
+  "issues": [
+    {
+      "author": {
+        "login": "publisher"
+      },
+      "blockedBy": [],
+      "body": "<!-- ai-harness-bootstrap:v1:474bde522a1fb0f8e5b73314 -->\n<!-- ai-harness-node:container -->\n\n<!-- ai-harness-plan:v1 -->\n{\"owner\": \"test\", \"number\": \"1\", \"plan\": {\"title\": \"Test Project\", \"summary\": \"Build a useful product\", \"nodes\": [{\"id\": \"phase\", \"kind\": \"phase\", \"parent\": null, \"title\": \"phase\", \"description\": \"Bounded scope and evidence\", \"acceptance\": [\"It works\"], \"validation\": [\"Run tests\"], \"depends_on\": [], \"risk\": \"LOW\", \"priority\": \"P1\", \"work_type\": \"Backend\"}, {\"id\": \"first\", \"kind\": \"task\", \"parent\": \"phase\", \"title\": \"first\", \"description\": \"Bounded scope and evidence\", \"acceptance\": [\"It works\"], \"validation\": [\"Run tests\"], \"depends_on\": [], \"risk\": \"LOW\", \"priority\": \"P1\", \"work_type\": \"Backend\"}, {\"id\": \"next\", \"kind\": \"task\", \"parent\": \"phase\", \"title\": \"next\", \"description\": \"Bounded scope and evidence\", \"acceptance\": [\"It works\"], \"validation\": [\"Run tests\"], \"depends_on\": [\"first\"], \"risk\": \"LOW\", \"priority\": \"P1\", \"work_type\": \"Backend\"}]}, \"publisher\": \"publisher\", \"nodes\": {\"phase\": {\"number\": 2, \"url\": \"https://github.com/test/repo/issues/2\", \"digest\": \"7c8b2d86fc16716bb574672f27b25b48533833f96144f87eea1471143cdc0163\"}, \"first\": {\"number\": 3, \"url\": \"https://github.com/test/repo/issues/3\", \"digest\": \"209447fdc0dc0e5e50840ad56e42a062e7a6a5955e6c5b36f960bccb468721da\"}, \"next\": {\"number\": 4, \"url\": \"https://github.com/test/repo/issues/4\", \"digest\": \"8979d64753dd806881e70033c06d586458ed140b844e3a36fe0b25d0df8a9aef\"}}, \"complete\": true, \"bootstrap_id\": \"474bde522a1fb0f8e5b73314\", \"repo\": \"test/repo\", \"signature\": \"1fde24e205b690ee68e2f65441eef89d1d1667491c13b5e825032ecccb162335\"}\n<!-- /ai-harness-plan -->\n\nBuild a useful product\n\nPublication incomplete. Do not dispatch descendants until the completion marker exists.\n\n\n\n<!-- ai-harness-bootstrap:complete -->\n",
+      "html_url": "https://github.com/test/repo/issues/1",
+      "number": 1,
+      "parent": null,
+      "state": "open",
+      "title": "[Project] Test Project",
+      "url": "https://github.com/test/repo/issues/1",
+      "user": {
+        "login": "publisher"
+      }
+    },
+    {
+      "author": {
+        "login": "publisher"
+      },
+      "blockedBy": [],
+      "body": "<!-- ai-harness-bootstrap-node:v1:474bde522a1fb0f8e5b73314:phase -->\n<!-- ai-harness-node:container -->\nBootstrap root: https://github.com/test/repo/issues/1\n\n## Goal and Scope\n\nBounded scope and evidence\n\n## Acceptance Criteria\n\n- It works\n\n## Validation\n\n- Run tests\n\n## Dependencies\n\nNone\n\n## Risk\n\nLOW\n",
+      "html_url": "https://github.com/test/repo/issues/2",
+      "number": 2,
+      "parent": {
+        "number": 1
+      },
+      "state": "open",
+      "title": "phase",
+      "url": "https://github.com/test/repo/issues/2",
+      "user": {
+        "login": "publisher"
+      }
+    },
+    {
+      "author": {
+        "login": "publisher"
+      },
+      "blockedBy": [],
+      "body": "<!-- ai-harness-bootstrap-node:v1:474bde522a1fb0f8e5b73314:first -->\n<!-- ai-harness-node:executable -->\nBootstrap root: https://github.com/test/repo/issues/1\n\n## Goal and Scope\n\nBounded scope and evidence\n\n## Acceptance Criteria\n\n- It works\n\n## Validation\n\n- Run tests\n\n## Dependencies\n\nNone\n\n## Risk\n\nLOW\n",
+      "html_url": "https://github.com/test/repo/issues/3",
+      "number": 3,
+      "parent": {
+        "number": 2
+      },
+      "state": "open",
+      "title": "first",
+      "url": "https://github.com/test/repo/issues/3",
+      "user": {
+        "login": "publisher"
+      }
+    },
+    {
+      "author": {
+        "login": "publisher"
+      },
+      "blockedBy": [
+        {
+          "number": 3
+        }
+      ],
+      "body": "<!-- ai-harness-bootstrap-node:v1:474bde522a1fb0f8e5b73314:next -->\n<!-- ai-harness-node:executable -->\nBootstrap root: https://github.com/test/repo/issues/1\n\n## Goal and Scope\n\nBounded scope and evidence\n\n## Acceptance Criteria\n\n- It works\n\n## Validation\n\n- Run tests\n\n## Dependencies\n\n- https://github.com/test/repo/issues/3\n\n## Risk\n\nLOW\n",
+      "html_url": "https://github.com/test/repo/issues/4",
+      "number": 4,
+      "parent": {
+        "number": 2
+      },
+      "state": "open",
+      "title": "next",
+      "url": "https://github.com/test/repo/issues/4",
+      "user": {
+        "login": "publisher"
+      }
+    }
+  ],
+  "items": {
+    "1": {
+      "Harness Status": "BACKLOG"
+    },
+    "2": {
+      "Agent Role": "Planner",
+      "Harness Status": "BACKLOG",
+      "Priority": "P1",
+      "Risk": "LOW",
+      "Work Type": "Backend"
+    },
+    "3": {
+      "Agent Role": "Implementer",
+      "Harness Status": "READY",
+      "Model": "profile:balanced (CLI default)",
+      "Priority": "P1",
+      "Provider": "OpenAI",
+      "Retry Count": "0",
+      "Risk": "LOW",
+      "Work Type": "Backend"
+    },
+    "4": {
+      "Agent Role": "Implementer",
+      "Harness Status": "BLOCKED",
+      "Model": "profile:balanced (CLI default)",
+      "Priority": "P1",
+      "Provider": "OpenAI",
+      "Retry Count": "0",
+      "Risk": "LOW",
+      "Work Type": "Backend"
+    }
+  },
+  "projects": [
+    {
+      "closed": false,
+      "id": "P1",
+      "number": 1,
+      "title": "Test Project"
+    }
+  ]
+}

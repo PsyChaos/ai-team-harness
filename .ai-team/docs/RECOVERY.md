@@ -20,6 +20,53 @@ Resume preserves the clone, audits the previous attempt count, and grants one
 additional implementation attempt. It never approves acceptance or merges code.
 Do not repeatedly resume an unchanged failure.
 
+WAITING_HUMAN means intervention is needed; it is not an approval request and
+does not waive a gate. Before resuming, identify the missing input, process
+failure, or actual product/security decision. Never restart an unchanged failure.
+
+For unavailable sandbox inputs, the broker can supply bounded signed context:
+
+```bash
+.ai-team/bin/coordinator-broker record-validation-context --issue N --report /absolute/exact-head-report.md
+.ai-team/bin/coordinator-broker capture-observer-context --issue N
+```
+
+The first command accepts an independently obtained report naming the current
+commit. The second captures actual broker snapshot and normalized GitHub data
+for offline observation checks. Both supply input/evidence only, never an
+approval. Implementers and reviewers receive the context only for its bound
+HEAD. The worker must still validate its code against supplied inputs; review
+and CI remain required. Then use `resume` with the corrected cause.
+
+For an exhausted malformed/missing reviewer result after correcting its cause:
+
+```bash
+.ai-team/bin/coordinator-broker resume-review --issue N --role security-reviewer --reason 'Corrected output contract'
+```
+
+This grants exactly one review-process retry, preserves previous findings in the
+new pack, and checks the PR, commit and implementation evidence bindings. It
+refuses valid reviews: CHANGES_REQUESTED must go to implementation, never be
+discarded as a format failure. Security reviewers receive the same mandatory
+structured output contract as ordinary reviewers.
+
+A short plain-text introduction before the unique review marker is tolerated.
+Duplicate reports, conflicting decisions/severities in the introduction, fenced
+examples and process failures still fail closed. Evidence digests always cover
+the entire original output; normalization never edits the stored report.
+
+After a parser fix, `reconcile-waiting-result --issue N` can reconsume existing
+complete reviews whose PR, HEAD, role and implementation-result bindings still
+match. It only queues REVIEWING, preserving both approvals and rejections for
+the normal broker gates. It does not grant new approval or reset retry limits.
+
+Valid CHANGES_REQUESTED gets its own cumulative per-issue correction budget
+(HARNESS_MAX_RETRIES), separate from attempts spent on unavailable infrastructure.
+The total Retry Count remains visible for audit. Correcting stale validation
+documentation or committing requested durable evidence is legitimate review work.
+The correction counter does not reset when HEAD changes. Exhaustion remains a
+real intervention point rather than an infinite retry loop.
+
 Complete local implementations may report VALIDATION_PENDING, keeping only
 `- [ ] [external:ci] ...` or `- [ ] [external:browser] ...` unchecked. Publication
 precedes hosted CI. Ordinary incomplete implementation still fails the handoff.
@@ -31,6 +78,18 @@ An operator who has actually performed external browser validation can supply
 current HEAD and include a `Decision: PASS` or `Decision: APPROVE` line. The broker
 signs this evidence and supplies it to the retry worker and reviewer; a changed
 HEAD invalidates it. Never use this option to waive missing validation.
+
+After validating a new commit without resuming implementation, use
+`coordinator-broker record-browser-validation --issue N --report /absolute/report.md`.
+The same exact-commit and signature requirements apply.
+
+A VERIFIED PR conflicting with a newer default branch receives one broker-bound
+upstream integration attempt. The broker fetches the trusted default branch and
+records both parent commits before preparing a local merge. The assigned worker
+resolves conflicts and commits locally; publication remains a fast-forward push.
+Interrupted preparation can replay the pending transition. CI and independent
+review run again, and prior browser evidence must be renewed for the new HEAD.
+A second upstream conflict requires operator inspection.
 
 Reviewer process failures are retried separately, within HARNESS_MAX_RETRIES;
 they do not trigger implementation changes. Before launching Claude, an expired

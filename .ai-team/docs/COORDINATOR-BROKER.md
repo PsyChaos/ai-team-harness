@@ -24,6 +24,42 @@ the outer bubblewrap boundary protects the coordinator checkout and secrets.
 
 ## Implemented lifecycle
 
+### Authenticated host acceptance
+
+Use `[external:host]` for validation that requires the real authenticated host
+(for example installed-provider discovery). It is separate from browser checks.
+After independently inspecting and running the relevant host check, register its
+bounded PASS report with `coordinator-broker record-host-validation --issue N
+--report /absolute/report.md`. The report must identify the current clean HEAD.
+The broker signs its repository/issue/HEAD binding, supplies it to retries and
+independent reviews, and requires fresh evidence again if HEAD changes. A host
+report cannot satisfy a browser gate and never grants review approval.
+
+If an earlier handoff mislabeled a host check as browser validation, use the
+existing bounded operator `resume` after registration. The worker must correct
+its handoff to `[external:host]`, assess the supplied evidence honestly and keep
+HEAD when no product change is needed. Copying an external attestation into a
+new documentation commit unnecessarily invalidates the evidence binding.
+
+### Provider quota recovery
+
+A failed provider process with a recognized quota message on stderr enters
+`WAITING_PROVIDER`, preserving the clone and assigned task. The next cycle selects
+an enabled, installed provider from `HARNESS_IMPLEMENTER_ORDER` or
+`HARNESS_REVIEWER_ORDER` that is outside its quota cooldown. Reviewers must still
+use a different provider from the implementer. If none is eligible, the task waits
+and is reconsidered automatically after cooldown; no human approval is needed.
+`HARNESS_PROVIDER_COOLDOWN_SECONDS` defaults to 900 (allowed range 30–86400).
+
+Quota continuation does not consume code-correction or reviewer process retries.
+Recovery binds the issue, branch, task pack, failed job/result and clone HEAD.
+Interrupted launches retain their recovery entitlement. Existing sibling review
+decisions, including rejections, are preserved. CI, review and merge gates remain
+mandatory. Unknown process errors continue through the ordinary bounded retry
+path; matching a quota phrase in model output alone does not trigger fallback.
+
+### Task transitions
+
 The broker implements one restart-safe transition per item per cycle:
 
 1. require a signed, complete bootstrap executable leaf;

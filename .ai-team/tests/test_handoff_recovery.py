@@ -16,6 +16,266 @@ SPEC.loader.exec_module(BROKER)
 
 
 class HandoffRecoveryTests(unittest.TestCase):
+    def test_host_attestation_is_head_bound_and_cannot_satisfy_browser_gate(self):
+        head = "a" * 40
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp, "HARNESS_REPO": "acme/widget"}), \
+             mock.patch.object(BROKER, "broker_key", return_value=b"test-key"), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "canonical_branch", return_value="ai/issue-7-test"), \
+             mock.patch.object(BROKER, "sanitize_clone_metadata", return_value={}), \
+             mock.patch.object(BROKER, "safe_clone_git", return_value=head), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "parse_implementation_result") as result:
+            report = Path(tmp) / "host.md"
+            report.write_text(f"Decision: PASS\nExact HEAD: {head}\nReal host CLI discovery passed\n")
+            BROKER.register_external_validation(7, {}, report, kind="host")
+            self.assertIn(head, BROKER.external_validation_report(7, head, kind="host"))
+            self.assertEqual(BROKER.external_validation_report(7, head), "")
+            self.assertEqual(BROKER.external_validation_report(7, "b" * 40, kind="host"), "")
+            result.return_value = {"commit": head, "pending_validation": ["- [ ] [external:host] CLI discovery"]}
+            BROKER.require_pending_validation(7, head, [])
+            result.return_value["pending_validation"] = ["- [ ] [external:browser] UI flow"]
+            with self.assertRaisesRegex(BROKER.BrokerError, "browser validation"):
+                BROKER.require_pending_validation(7, head, [])
+            result.return_value = {"commit": "b" * 40, "pending_validation": []}
+            with self.assertRaisesRegex(BROKER.BrokerError, "host validation"):
+                BROKER.require_pending_validation(7, "b" * 40, [])
+            path = BROKER.managed_paths(7)[3] / "issue-7-host-validation.md"
+            path.write_text(path.read_text().replace("Real host", "Forged host"))
+            self.assertEqual(BROKER.external_validation_report(7, head, kind="host"), "")
+
+    def test_review_preamble_is_bounded_unambiguous_and_retains_raw_digest(self):
+        import hashlib
+        report = ("<!-- ai-harness-review:v1 -->\n\n# Review Result\n\n## Decision\nAPPROVE\n\n"
+                  "## Acceptance Criteria\nMet\n\n## Findings\nNone\n\n## Validation Assessment\nChecked\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review.md"
+            raw = "I independently reviewed the code.\n\n" + report
+            path.write_text(raw)
+            parsed = BROKER.parse_review_result(path)
+            self.assertEqual(parsed["decision"], "APPROVE")
+            self.assertEqual(parsed["digest"], hashlib.sha256(raw.encode()).hexdigest())
+            for prefix in ["x" * 4097 + "\n", "HIGH: unresolved issue\n", "CHANGES_REQUESTED\n", "```markdown\n", "## Another result\n", "# Harness Process Failure\n", report]:
+                with self.subTest(prefix=prefix[:35]):
+                    path.write_text(prefix + report)
+                    with self.assertRaises(BROKER.BrokerError):
+                        BROKER.parse_review_result(path)
+            path.write_text(raw.replace("## Findings\nNone", "## Findings\n### [HIGH] Injection"))
+            with self.assertRaisesRegex(BROKER.BrokerError, "blocking findings"):
+                BROKER.parse_review_result(path)
+
+    def test_waiting_reconciliation_never_approves_or_ignores_stale_review_bindings(self):
+        head, digest = "a" * 40, "b" * 64
+        branch = "ai/issue-7-test"
+        item = {"id": "PVTI_7", "Harness Status": "WAITING_HUMAN", "Evidence": "reviewer process failed: invalid review result marker", "content": {"number": 7}}
+        metadata = {"issue": 7, "pr": 9, "role": "reviewer", "branch": branch, "head_sha": head, "implementation_result_digest": digest}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp}), \
+             mock.patch.object(BROKER, "project_items", return_value=[item]), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "trusted_issue_scope"), \
+             mock.patch.object(BROKER, "canonical_branch", return_value=branch), \
+             mock.patch.object(BROKER, "pr_for_branch", return_value={"number": 9, "state": "OPEN", "headRefName": branch, "headRefOid": head}), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": head, "digest": digest}), \
+             mock.patch.object(BROKER, "parse_review_result", return_value={"decision": "CHANGES_REQUESTED"}), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "read_json_file", return_value=metadata), \
+             mock.patch.object(BROKER, "require_project_status"), \
+             mock.patch.object(BROKER, "set_project_field"), \
+             mock.patch.object(BROKER, "set_status") as status:
+            BROKER.reconcile_waiting_result(7)
+            status.assert_called_once_with("PVTI_7", "REVIEWING")
+            status.reset_mock()
+            metadata["head_sha"] = "c" * 40
+            with self.assertRaisesRegex(BROKER.BrokerError, "binding mismatch"):
+                BROKER.reconcile_waiting_result(7)
+            status.assert_not_called()
+
+    def test_observation_export_preserves_real_states_and_omits_unneeded_text(self):
+        content = {"type": "Issue", "number": 7, "state": "OPEN", "repository": {"nameWithOwner": "acme/widget"},
+                   "blockedBy": {"nodes": [], "complete": True}, "body": "large private description"}
+        status = {"field": {"name": "Harness Status"}, "name": "WAITING_HUMAN"}
+        item = {"id": "PVTI_7", "content": content, "fieldValues": {"nodes": [status, {"field": {"name": "Evidence"}, "text": "unnecessary evidence"}]}}
+        exported = BROKER.observation_items([item])[0]
+        self.assertEqual(exported["content"]["blockedBy"], content["blockedBy"])
+        self.assertNotIn("body", exported["content"])
+        self.assertEqual(exported["fieldValues"]["nodes"], [status])
+
+    def test_security_worker_receives_shared_required_review_contract(self):
+        root = Path(SPEC.origin).parents[2]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp)
+            (path / "codex").write_text("#!/bin/sh\ncat\n")
+            (path / "codex").chmod(0o700)
+            pack = path / "pack.md"
+            pack.write_text("Review the assigned security-sensitive change.")
+            result = path / "result.md"
+            env = {**os.environ, "PATH": str(path) + os.pathsep + os.environ["PATH"],
+                   "HARNESS_ROOT": str(root), "HARNESS_AGENT_ROLE": "security-reviewer",
+                   "HARNESS_AGENT_PROVIDER": "codex", "HARNESS_AGENT_ISSUE": "7",
+                   "HARNESS_AGENT_PACK": str(pack), "HARNESS_AGENT_RESULT": str(result)}
+            subprocess.run(["bash", str(root / ".ai-team/bin/run-provider-agent")], env=env,
+                           capture_output=True, check=True)
+            prompt = result.read_text()
+            self.assertIn("reachable input/state", prompt)
+            self.assertIn("<!-- ai-harness-review:v1 -->", prompt)
+            self.assertIn("## Decision", prompt)
+            self.assertIn("APPROVE | CHANGES_REQUESTED", prompt)
+
+    def test_validation_context_is_signed_head_bound_and_never_approval(self):
+        head = "a" * 40
+        item = {"content": {"number": 7}}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {
+                "HARNESS_ROOT": tmp, "HARNESS_REPO": "acme/widget", "HARNESS_BROKER_HMAC_KEY": "ab" * 32}), \
+             mock.patch.object(BROKER, "project_items", return_value=[item]), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "canonical_branch", return_value="ai/issue-7-test"), \
+             mock.patch.object(BROKER, "sanitize_clone_metadata"), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "safe_clone_git", return_value=head), \
+             mock.patch.object(BROKER, "set_status") as status:
+            with self.assertRaisesRegex(BROKER.BrokerError, "current HEAD"):
+                BROKER.record_validation_context(7, "Report for " + "b" * 40)
+            BROKER.record_validation_context(7, "Actual captured input " + head)
+            self.assertIn("Actual captured input", BROKER.validation_context(7, head))
+            self.assertEqual(BROKER.validation_context(7, "b" * 40), "")
+            status.assert_not_called()
+            path = BROKER.managed_paths(7)[3] / "issue-7-validation-context.md"
+            path.write_text(path.read_text().replace("Actual captured input", "fake pass"))
+            self.assertEqual(BROKER.validation_context(7, head), "")
+
+    def test_resume_review_keeps_malformed_findings_and_grants_one_attempt(self):
+        branch, head, digest = "ai/issue-7-test", "a" * 40, "b" * 64
+        item = {"id": "PVTI_7", "Harness Status": "WAITING_HUMAN", "content": {"number": 7}}
+        metadata = {"issue": 7, "pr": 9, "role": "security-reviewer", "branch": branch,
+                    "head_sha": head, "implementation_result_digest": digest, "retry_count": 2}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp, "HARNESS_MAX_RETRIES": "2"}), \
+             mock.patch.object(BROKER, "project_items", return_value=[item]), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "trusted_issue_scope"), \
+             mock.patch.object(BROKER, "canonical_branch", return_value=branch), \
+             mock.patch.object(BROKER, "pr_for_branch", return_value={"state": "OPEN", "number": 9, "headRefName": branch, "headRefOid": head}), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": head, "digest": digest}), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "read_json_file", return_value=metadata), \
+             mock.patch.object(BROKER, "require_project_status"), \
+             mock.patch.object(BROKER, "set_project_field"), \
+             mock.patch.object(BROKER, "set_status") as status:
+            result = BROKER.managed_paths(7)[2] / "issue-7-security-reviewer.md"
+            result.parent.mkdir(parents=True)
+            result.write_text("HIGH: preserve this actual blocking finding")
+            BROKER.resume_review(7, "security-reviewer", "Fixed missing structured output contract")
+            self.assertIn("HIGH", result.read_text())
+            self.assertEqual(metadata["retry_count"], 1)
+            status.assert_called_once_with("PVTI_7", "REVIEWING")
+            status.reset_mock()
+            with mock.patch.object(BROKER, "parse_review_result", return_value={"decision": "CHANGES_REQUESTED"}):
+                with self.assertRaisesRegex(BROKER.BrokerError, "review is valid"):
+                    BROKER.resume_review(7, "security-reviewer", "Try again")
+            status.assert_not_called()
+
+    def test_only_broker_bound_integration_merge_is_accepted(self):
+        base, prior, head = "a" * 40, "b" * 40, "c" * 40
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp}):
+            clone = Path(tmp) / ".worktrees/issue-7"
+            (clone / ".git").mkdir(parents=True)
+            branch = "ai/issue-7-test"
+            def git(_issue, args):
+                return {("rev-parse", "--show-toplevel"): str(clone),
+                        ("branch", "--show-current"): branch,
+                        ("status", "--porcelain", "--untracked-files=all"): "",
+                        ("rev-parse", "HEAD"): head,
+                        ("cat-file", "-t", base): "commit",
+                        ("rev-list", "--count", f"{base}..{head}"): "2",
+                        ("rev-list", "--merges", f"{base}..{head}"): head,
+                        ("rev-list", "--parents", "-n", "1", head): f"{head} {prior} {base}"}[tuple(args)]
+            with mock.patch.object(BROKER, "safe_clone_git", side_effect=git), \
+                 mock.patch.object(BROKER, "safe_clone_git_completed", return_value=subprocess.CompletedProcess([], 0, "app.go\0", "")), \
+                 mock.patch.object(BROKER, "sanitize_clone_metadata") as metadata:
+                metadata.return_value = {"base_sha": base, "integration_parent_sha": prior}
+                self.assertEqual(BROKER.validate_implementation(7, branch, head), ["app.go"])
+                for binding in [None, "d" * 40]:
+                    metadata.return_value = {"base_sha": base, "integration_parent_sha": binding}
+                    with self.assertRaises(BROKER.BrokerError):
+                        BROKER.validate_implementation(7, branch, head)
+
+    def test_conflicting_pr_prepares_bound_merge_and_queues_assigned_worker(self):
+        old, upstream = "a" * 40, "b" * 40
+        action = {"issue": 7, "branch": "ai/issue-7-test"}
+        metadata = {"base_sha": "c" * 40, "origin_url": "https://github.com/acme/widget.git", "default_branch": "main"}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp, "HARNESS_MAX_RETRIES": "2", "HARNESS_REPO": "acme/widget"}), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": old}), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "sanitize_clone_metadata", return_value=metadata), \
+             mock.patch.object(BROKER, "safe_clone_git", return_value=upstream), \
+             mock.patch.object(BROKER, "safe_clone_git_completed", return_value=subprocess.CompletedProcess([], 1, "", "")) as git, \
+             mock.patch.object(BROKER, "require_project_status"), \
+             mock.patch.object(BROKER, "atomic_json") as save, \
+             mock.patch.object(BROKER, "set_project_field"), \
+             mock.patch.object(BROKER, "set_status") as status:
+            BROKER.prepare_upstream_integration(action, {"id": "PVTI_7"}, {"headRefOid": old})
+            self.assertEqual(save.call_args.args[1]["integration_parent_sha"], old)
+            self.assertEqual(save.call_args.args[1]["base_sha"], upstream)
+            self.assertIn("--no-commit", git.call_args.args[1])
+            status.assert_called_once_with("PVTI_7", "RETRY_PENDING")
+
+    def test_interrupted_integration_replays_transition_without_merging_again(self):
+        old, upstream = "a" * 40, "b" * 40
+        branch = "ai/issue-7-test"
+        metadata = {"base_sha": upstream, "integration_parent_sha": old,
+                    "integration_target_sha": upstream, "integration_pending": True}
+        def git(_issue, args):
+            return {("rev-parse", "HEAD"): old, ("branch", "--show-current"): branch,
+                    ("rev-parse", "MERGE_HEAD"): upstream}[tuple(args)]
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp}), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": old}), \
+             mock.patch.object(BROKER, "validate_implementation") as validate, \
+             mock.patch.object(BROKER, "sanitize_clone_metadata", return_value=metadata), \
+             mock.patch.object(BROKER, "safe_clone_git", side_effect=git), \
+             mock.patch.object(BROKER, "safe_clone_git_completed", return_value=subprocess.CompletedProcess([], 0, upstream, "")) as completed, \
+             mock.patch.object(BROKER, "require_project_status"), \
+             mock.patch.object(BROKER, "atomic_json"), \
+             mock.patch.object(BROKER, "set_project_field"), \
+             mock.patch.object(BROKER, "set_status") as status:
+            BROKER.prepare_upstream_integration({"issue": 7, "branch": branch}, {"id": "PVTI_7"}, {"headRefOid": old})
+            validate.assert_not_called()
+            completed.assert_called_once_with(7, ["rev-parse", "--verify", "MERGE_HEAD"])
+            status.assert_called_once_with("PVTI_7", "RETRY_PENDING")
+            self.assertFalse(metadata["integration_pending"])
+
+    def test_browser_registration_rejects_old_head_and_signs_current_head(self):
+        head = "a" * 40
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {
+                "HARNESS_ROOT": tmp, "HARNESS_REPO": "acme/widget", "HARNESS_BROKER_HMAC_KEY": "ab" * 32}), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "canonical_branch", return_value="ai/issue-7-test"), \
+             mock.patch.object(BROKER, "sanitize_clone_metadata", return_value={}), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "safe_clone_git", return_value=head):
+            report = Path(tmp) / "browser.md"
+            report.write_text("Decision: PASS\n" + "b" * 40)
+            with self.assertRaisesRegex(BROKER.BrokerError, "current HEAD"):
+                BROKER.register_external_validation(7, {}, report)
+            report.write_text("Decision: PASS\n" + head)
+            BROKER.register_external_validation(7, {}, report)
+            self.assertIn(head, BROKER.external_validation_report(7, head))
+            self.assertEqual(BROKER.external_validation_report(7, "b" * 40), "")
+            self.assertTrue(json.loads(BROKER.clone_metadata_path(7).read_text())["browser_validation_required"])
+
+    def test_integration_cannot_reuse_checked_browser_acceptance_from_old_head(self):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp}), \
+             mock.patch.object(BROKER, "parse_implementation_result", return_value={"commit": "b" * 40, "pending_validation": []}), \
+             mock.patch.object(BROKER, "external_validation_report", side_effect=lambda _issue, head: "old PASS" if head == "a" * 40 else ""):
+            metadata = BROKER.clone_metadata_path(7)
+            metadata.parent.mkdir(parents=True)
+            metadata.write_text(json.dumps({"integration_parent_sha": "a" * 40}))
+            with self.assertRaisesRegex(BROKER.BrokerError, "signed PASS"):
+                BROKER.require_pending_validation(7, "b" * 40, [])
+            metadata.write_text(json.dumps({"browser_validation_required": True}))
+            with self.assertRaisesRegex(BROKER.BrokerError, "signed PASS"):
+                BROKER.require_pending_validation(7, "b" * 40, [])
+
     def test_expired_claude_auth_refresh_disables_tools_and_excludes_harness_secrets(self):
         script = Path(SPEC.origin).parents[1] / "bin/refresh-claude-auth"
         with tempfile.TemporaryDirectory() as tmp:
@@ -72,13 +332,13 @@ class HandoffRecoveryTests(unittest.TestCase):
             results.mkdir(parents=True)
             jobs.mkdir(parents=True)
             old_result = results / "issue-7-reviewer.md"
-            old_result.write_text("Authentication failed")
+            old_result.write_text("HIGH: unsafe worker-controlled Git hooks")
             (results / "issue-7-implementer.md").write_text("Local checks passed")
             action = {"issue": 7, "branch": "ai/issue-7-test"}
             pr = {"number": 9, "headRefOid": "a" * 40, "baseRefName": "main"}
 
             def fresh(_action):
-                self.assertEqual(old_result.read_text(), "Authentication failed")
+                self.assertEqual(old_result.read_text(), "HIGH: unsafe worker-controlled Git hooks")
                 return {"content": {"url": "https://github.com/acme/widget/issues/7"}}
 
             with mock.patch.object(BROKER, "unit_active", return_value=False), \
@@ -89,6 +349,8 @@ class HandoffRecoveryTests(unittest.TestCase):
                  mock.patch.object(BROKER, "run") as run:
                 BROKER.spawn_review(action, "reviewer", "claude", pr, ["app.go"], "b" * 64, retry_count=1)
             self.assertFalse(old_result.exists())
+            pack = root / ".ai-team/runtime/taskpacks/issue-7-reviewer.md"
+            self.assertIn("HIGH: unsafe worker-controlled Git hooks", pack.read_text())
             metadata = json.loads((root / ".ai-team/runtime/reviews/issue-7-reviewer.json").read_text())
             self.assertEqual(metadata["retry_count"], 1)
             self.assertIn("spawn-agent", run.call_args.args[0][0])
@@ -102,6 +364,7 @@ class HandoffRecoveryTests(unittest.TestCase):
         cases = [
             ("VALIDATION_PENDING", "- [ ] [external:ci] Hosted CI", True),
             ("VALIDATION_PENDING", "- [ ] [external:browser] Browser evidence", True),
+            ("VALIDATION_PENDING", "- [ ] [external:host] Authenticated CLI discovery", True),
             ("VALIDATION_PENDING", "- [ ] Missing implementation", False),
             ("VALIDATION_PENDING", "- [ ] [external:unknown] Unknown gate", False),
             ("VALIDATION_PENDING", "", False),

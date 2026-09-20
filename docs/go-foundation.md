@@ -1,14 +1,20 @@
 # Go foundation
 
 The repository-root module builds the `cmd/harness` CLI and `internal/` packages
-using only the standard library (Go 1.23 or later). The CLI reports migration
-status; the Python broker remains the active executor.
+using only the standard library (Go 1.23 or later). The CLI serves the embedded
+Factory Floor Demo at `127.0.0.1:8080` by default; the Python broker remains the
+active executor. See [dashboard usage and validation](validation/issue-4-dashboard.md).
 
 - `domain`: existing broker, bootstrap and decision-engine JSON records.
 - `ghgateway`: read-only normalized Project item interface.
 - `routing`: task routing evidence interface, without dispatch authority.
-- `config`, `journal`, `scheduler`: documented package placeholders. Configuration
-  loading, journal storage and scheduling behavior belong to later tasks.
+- `scheduler`: deterministic eligibility gates and FIFO bounded aging over caller-supplied
+  exact snapshots; provider selection and execution remain separate. See its package
+  documentation for round bounds and reservation requirements.
+- `journal`: bounded persisted observations with snapshot and SSE handlers; see
+  [the journal contract](event-journal.md).
+- `config`: documented package placeholder. Configuration loading belongs to a
+  later task.
 
 No provider SDK, credentials, GitHub writes, systemd calls or Python subprocess
 bridge are introduced by the Go command. Existing shell entrypoints are unchanged.

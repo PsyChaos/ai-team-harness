@@ -64,6 +64,10 @@ SELECTED_MODEL="$(resolve_model "$PROVIDER" "$MODEL_PROFILE")"
 
 PROMPT="$(
   cat "$SKILL_FILE"
+  if [[ "$ROLE" == "security-reviewer" ]]; then
+    printf '\n\n--- REQUIRED REVIEW RESULT CONTRACT ---\n\n'
+    cat "$HARNESS_ROOT/.agents/skills/reviewing-changes/SKILL.md"
+  fi
   printf '\n\n--- ASSIGNED WORK PACK ---\n\n'
   cat "$PACK"
   printf '\n\n--- RUNTIME ROUTING ---\nProvider: %s\nModel profile: %s\n' "$PROVIDER" "$MODEL_PROFILE"
@@ -78,25 +82,49 @@ If implementation and locally available checks are complete, but hosted CI or
 browser validation cannot run in this sandbox, report VALIDATION_PENDING rather
 than retrying the same unavailable infrastructure or claiming SUCCESS. Keep each
 unverified acceptance bullet unchecked and prefix it exactly with [external:ci]
-or [external:browser], e.g. '- [ ] [external:ci] Hosted CI has not run yet.'
+or [external:browser] or [external:host], e.g. '- [ ] [external:ci] Hosted CI has not run yet.'
+Use [external:host] for checks requiring the real authenticated host; never
+label CLI discovery/authentication as browser validation. Registered exact-HEAD
+host attestations are supplied by the broker, outside your sandbox. Assess their
+reported checks without claiming you personally performed them. If code and
+documentation already honestly describe your local limitations, preserve HEAD
+and emit the corrected handoff; do not create another documentation-only commit
+merely to copy an attestation, which would invalidate its exact-HEAD binding.
 All other acceptance bullets must be completed and evidenced. Incomplete code or
 failed executable local checks still require PARTIAL or FAILED. Pending external
 validation permits publication and review only; it never grants merge approval.
 Preserve existing implementation commits. If only handing off external checks,
-reuse the current clean HEAD; do not create documentation-only retry commits.
+reuse the current clean HEAD unless new durable validation evidence is required.
+When a rejecting review requests durable evidence or corrects stale validation
+documentation, update that documentation with real checks, provenance, source
+commit and results, and commit the correction. Do not leave old claims that a
+required check is unavailable after it has actually been performed. Do not
+claim that an older report directly validates a different code revision.
+If the broker prepared an upstream integration (MERGE_HEAD exists and the Task
+Pack says so), resolve its conflicts and commit that prepared merge locally.
+This is branch integration only, never permission to merge a PR or push. Preserve
+upstream functionality as well as your task, rerun checks, and report the new HEAD.
 HANDOFF
   fi
 )"
 
 run_and_capture() {
+  local error_file rc kind="process"
+  error_file="$(mktemp -t harness-provider-error-XXXXXXXX)"
   set +e
-  "$@" | tee "$RESULT"
-  local rc=${PIPESTATUS[0]}
+  "$@" 2>"$error_file" | tee "$RESULT"
+  rc=${PIPESTATUS[0]}
   set -e
+  cat "$error_file" >&2
   if [[ "$rc" -ne 0 ]]; then
-    printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
+    if tail -c 65536 "$error_file" | grep -Ei "you.ve hit your usage limit|usage limit (reached|exceeded)|rate_limit_exceeded|insufficient_quota|rate limit exceeded|credit balance is too low|exceeded your current quota" >/dev/null; then
+      kind="quota"
+    fi
+    printf '\n# Harness Process Failure\n\nProvider process exit code: %s\nProvider failure kind: %s\n' "$rc" "$kind" >> "$RESULT"
+    rm -f -- "$error_file"
     return "$rc"
   fi
+  rm -f -- "$error_file"
 }
 
 case "$PROVIDER" in
@@ -107,14 +135,7 @@ case "$PROVIDER" in
     args=(exec --ephemeral --strict-config)
     [[ -n "$SELECTED_MODEL" ]] && args+=(--model "$SELECTED_MODEL")
 
-    set +e
-    printf '%s\n' "$PROMPT" | codex "${args[@]}" - | tee "$RESULT"
-    rc=${PIPESTATUS[1]}
-    set -e
-    if [[ "$rc" -ne 0 ]]; then
-      printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
-      exit "$rc"
-    fi
+    printf '%s\n' "$PROMPT" | run_and_capture codex "${args[@]}" -
     ;;
 
   claude)

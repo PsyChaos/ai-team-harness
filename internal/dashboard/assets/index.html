@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Factory Floor · Demo</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script></head><body><a class="skip" href="#factory">Skip to dashboard</a><p class="demo-notice">Demo — all tasks, agents, events and metrics are fixtures. No live connection or remote controls.</p>
+
+<main aria-label="Factory Floor Demo" style="min-height:100vh; background:radial-gradient(1200px 600px at 50% -10%, #14181f 0%, #0b0d11 60%); color:oklch(0.93 0.004 250); font-family:Archivo, Helvetica, sans-serif; display:flex; flex-direction:column;">
+
+  <div style="display:flex; align-items:center; gap:24px; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,0.07); background:rgba(11,13,17,0.86); backdrop-filter:blur(8px); position:sticky; top:0; z-index:40; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div style="width:10px; height:10px; border-radius:2px; background:oklch(0.74 0.13 165); animation:bp 2.4s ease-in-out infinite;"></div>
+      <div style="font-size:14px; font-weight:700; letter-spacing:0.02em;">AI TEAM HARNESS</div>
+      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.62 0.01 250); border-left:1px solid rgba(255,255,255,0.12); padding-left:10px;">Demo · Factory Floor</div>
+    </div>
+
+    <div role="tablist" aria-label="Demo dashboard" style="display:flex; gap:2px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px;">
+      <button type="button" role="tab" id="tab-factory" aria-controls="factory" aria-selected="true" tabindex="0">Factory</button>
+      <button type="button" role="tab" id="tab-agents" aria-controls="agents" aria-selected="false" tabindex="-1">Agents</button>
+      <button type="button" role="tab" id="tab-events" aria-controls="events" aria-selected="false" tabindex="-1">Events</button>
+    </div>
+
+    <div style="display:flex; gap:18px; margin-left:auto; flex-wrap:wrap; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px;">
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">WORKERS</div>
+          <div style="color:oklch(0.72 0.13 250);font-size:13px;font-weight:500">1 / 4</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">REVIEWERS</div>
+          <div style="color:oklch(0.72 0.13 250);font-size:13px;font-weight:500">0 / 2</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">READY</div>
+          <div style="color:oklch(0.74 0.13 165);font-size:13px;font-weight:500">3</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">BLOCKED</div>
+          <div style="color:oklch(0.80 0.13 75);font-size:13px;font-weight:500">3</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">CI</div>
+          <div style="color:oklch(0.58 0.01 250);font-size:13px;font-weight:500">0</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">MERGED</div>
+          <div style="color:oklch(0.74 0.13 165);font-size:13px;font-weight:500">18</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">HUMAN</div>
+          <div style="color:oklch(0.58 0.01 250);font-size:13px;font-weight:500">0</div>
+        </div>
+
+    </div>
+
+    <div style="display:flex; align-items:center; gap:7px; padding:5px 10px; border:1px solid rgba(255,255,255,0.08); border-radius:5px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px; color:oklch(0.62 0.01 250);">
+      <span style="width:6px; height:6px; border-radius:50%; background:oklch(0.74 0.13 165); animation:bp 1.6s ease-in-out infinite;"></span>
+      <span>Demo · offline fixtures</span>
+    </div>
+  </div>
+
+  <section id="factory" role="tabpanel" aria-labelledby="tab-factory" tabindex="0">
+  <div style="padding:16px 20px 22px; display:flex; flex-direction:column; gap:14px;">
+
+    <div style="position:relative; display:flex; flex-direction:column; gap:14px;">
+
+      <div class="overview" style="display:grid; grid-template-columns:minmax(260px,1fr) minmax(280px,1.15fr) minmax(240px,0.95fr); gap:14px; align-items:stretch;">
+
+        <div data-slot="tower" style="position:relative; border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:linear-gradient(180deg, rgba(120,160,255,0.07), rgba(255,255,255,0.015)); padding:14px 16px; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+            <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:&#x27;IBM Plex Mono&#x27;,monospace;">CONTROL TOWER</div>
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.72 0.13 250);">CYCLE #1842</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="position:relative; width:30px; height:30px; display:grid; place-items:center;">
+              <div style="position:absolute;inset:0;border-radius:50%;border:1px solid oklch(0.72 0.13 250);opacity:0.5;animation:none"></div>
+              <div style="width:11px; height:11px; border-radius:3px; background:oklch(0.72 0.13 250);"></div>
+            </div>
+            <div>
+              <div style="font-size:16px; font-weight:600; line-height:1.1;">Coordinator</div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.62 0.01 250);">Claude · strong · Jev enabled</div>
+            </div>
+          </div>
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; color:oklch(0.86 0.02 250); min-height:18px;">Demo · reconciling fixture state</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <div style="flex:1; height:2px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
+              <div style="height:100%;width:85%;background:oklch(0.72 0.13 250);border-radius:2px;transition:width 450ms linear"></div>
+            </div>
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.62 0.01 250);">next 00:02</div>
+          </div>
+        </div>
+
+        <div data-slot="jev" style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px; display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+            <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:&#x27;IBM Plex Mono&#x27;,monospace;">DECISION ENGINE</div>
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.74 0.13 165);background:rgba(100,230,190,0.10)">Jev</div>
+          </div>
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; color:oklch(0.86 0.02 250); margin-bottom:10px;">Idle · awaiting next routing decision</div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:56px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.008 250);">PROVIDER</div>
+                <div style="width:62px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11.5px; color:oklch(0.9 0.01 250);">—</div>
+                <div style="flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250)"></div>
+                </div>
+                <div style="width:32px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">—</div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:56px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.008 250);">MODEL</div>
+                <div style="width:62px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11.5px; color:oklch(0.9 0.01 250);">—</div>
+                <div style="flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250)"></div>
+                </div>
+                <div style="width:32px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">—</div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:56px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.008 250);">REVIEW</div>
+                <div style="width:62px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11.5px; color:oklch(0.9 0.01 250);">—</div>
+                <div style="flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250)"></div>
+                </div>
+                <div style="width:32px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">—</div>
+              </div>
+
+          </div>
+        </div>
+
+        <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px;">
+          <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:&#x27;IBM Plex Mono&#x27;,monospace; margin-bottom:12px;">PHASES</div>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; font-size:12px; color:oklch(0.82 0.008 250);">Phase 1 — Foundation</div>
+                <div style="width:88px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250);border-radius:2px;transition:width 900ms ease"></div>
+                </div>
+                <div style="width:34px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.68 0.01 250);">0%</div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; font-size:12px; color:oklch(0.82 0.008 250);">Phase 2 — Core Product</div>
+                <div style="width:88px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250);border-radius:2px;transition:width 900ms ease"></div>
+                </div>
+                <div style="width:34px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.68 0.01 250);">0%</div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; font-size:12px; color:oklch(0.82 0.008 250);">Phase 3 — Integrations</div>
+                <div style="width:88px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250);border-radius:2px;transition:width 900ms ease"></div>
+                </div>
+                <div style="width:34px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.68 0.01 250);">0%</div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; font-size:12px; color:oklch(0.82 0.008 250);">Phase 4 — Hardening</div>
+                <div style="width:88px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                  <div style="height:100%;width:0%;background:oklch(0.72 0.13 250);border-radius:2px;transition:width 900ms ease"></div>
+                </div>
+                <div style="width:34px; text-align:right; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.68 0.01 250);">0%</div>
+              </div>
+
+          </div>
+        </div>
+      </div>
+
+
+
+      <div role="region" aria-label="Demo workstations and task flow" tabindex="0" style="overflow-x:auto; padding-bottom:4px;">
+        <div class="task-flow" aria-label="Demo task flow" style="min-width:1340px; display:grid; grid-template-columns:0.92fr 2fr 1.12fr 0.86fr 1fr 1fr 0.8fr; gap:10px; align-items:start;">
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">READY QUEUE</div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.74 0.13 165);">3</div>
+            </div>
+            <div data-slot="ready" style="min-height:220px; border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:6px;">
+
+                <div style="border:1px solid rgba(255,255,255,0.09); border-left:2px solid oklch(0.74 0.13 165); border-radius:5px; background:rgba(255,255,255,0.03); padding:7px 9px; animation:fin 320ms ease-out;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.9 0.01 250);">#126</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.72 0.01 250);background:rgba(255,255,255,0.05)">MED</div>
+                  </div>
+                  <div style="font-size:11.5px; color:oklch(0.78 0.008 250); line-height:1.3; margin-top:3px; text-wrap:pretty;">Rate limiter for public API</div>
+                </div>
+
+                <div style="border:1px solid rgba(255,255,255,0.09); border-left:2px solid oklch(0.74 0.13 165); border-radius:5px; background:rgba(255,255,255,0.03); padding:7px 9px; animation:fin 320ms ease-out;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.9 0.01 250);">#129</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.80 0.13 75);background:rgba(255,255,255,0.05)">HIGH</div>
+                  </div>
+                  <div style="font-size:11.5px; color:oklch(0.78 0.008 250); line-height:1.3; margin-top:3px; text-wrap:pretty;">Session cookie hardening</div>
+                </div>
+
+                <div style="border:1px solid rgba(255,255,255,0.09); border-left:2px solid oklch(0.74 0.13 165); border-radius:5px; background:rgba(255,255,255,0.03); padding:7px 9px; animation:fin 320ms ease-out;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.9 0.01 250);">#131</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.05)">LOW</div>
+                  </div>
+                  <div style="font-size:11.5px; color:oklch(0.78 0.008 250); line-height:1.3; margin-top:3px; text-wrap:pretty;">Pricing page responsive grid</div>
+                </div>
+
+            </div>
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250); margin-top:2px;">BLOCKED</div>
+            <div style="border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:6px; min-height:56px;">
+
+                <div style="border:1px dashed rgba(255,255,255,0.14);border-radius:5px;padding:7px 9px;opacity:1;transform:none;transition:opacity 900ms ease, transform 900ms ease">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">#150</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9px; color:oklch(0.58 0.01 250);">Frontend</div>
+                  </div>
+                  <div style="font-size:11px; color:oklch(0.64 0.008 250); line-height:1.3; margin-top:2px;">Frontend auth integration</div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9.5px;color:oklch(0.80 0.13 75);opacity:0.9;transition:opacity 700ms ease">
+                    <span style="width:14px; height:1px; background:currentColor; display:inline-block;"></span>
+                    <span>requires #124</span>
+                  </div>
+                </div>
+
+                <div style="border:1px dashed rgba(255,255,255,0.14);border-radius:5px;padding:7px 9px;opacity:1;transform:none;transition:opacity 900ms ease, transform 900ms ease">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">#152</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9px; color:oklch(0.58 0.01 250);">Backend</div>
+                  </div>
+                  <div style="font-size:11px; color:oklch(0.64 0.008 250); line-height:1.3; margin-top:2px;">Billing portal SSO handoff</div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9.5px;color:oklch(0.80 0.13 75);opacity:0.9;transition:opacity 700ms ease">
+                    <span style="width:14px; height:1px; background:currentColor; display:inline-block;"></span>
+                    <span>requires #129</span>
+                  </div>
+                </div>
+
+                <div style="border:1px dashed rgba(255,255,255,0.14);border-radius:5px;padding:7px 9px;opacity:1;transform:none;transition:opacity 900ms ease, transform 900ms ease">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.72 0.01 250);">#156</div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9px; color:oklch(0.58 0.01 250);">Platform</div>
+                  </div>
+                  <div style="font-size:11px; color:oklch(0.64 0.008 250); line-height:1.3; margin-top:2px;">Content model migration</div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9.5px;color:oklch(0.80 0.13 75);opacity:0.9;transition:opacity 700ms ease">
+                    <span style="width:14px; height:1px; background:currentColor; display:inline-block;"></span>
+                    <span>requires #138</span>
+                  </div>
+                </div>
+
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">IMPLEMENTATION</div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.68 0.01 250);">1 / 4 cells</div>
+            </div>
+            <div class="responsive-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+
+                <div data-slot="impl0" style="border:1px solid rgba(120,160,255,0.28);border-radius:8px;background:linear-gradient(180deg, rgba(120,160,255,0.055), rgba(255,255,255,0.012));padding:11px 12px;transition:border-color 400ms, background 400ms;box-shadow:0 0 0 1px rgba(120,160,255,0.06), 0 8px 24px -18px rgba(120,160,255,0.6)">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <div style="width:7px;height:7px;border-radius:2px;background:oklch(0.72 0.13 250);animation:none"></div>
+                      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; color:oklch(0.93 0.008 250); letter-spacing:0.04em;">COD-01</div>
+                    </div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.72 0.13 250);background:rgba(120,160,255,0.10)">EDITING</div>
+                  </div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">Codex · balanced</div>
+                  <div style="margin-top:9px; min-height:32px;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);">Issue #124</div>
+                    <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; text-wrap:pretty;">OAuth refresh token race condition</div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:2px; height:22px; margin-top:8px;">
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:0.00s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.13s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.26s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.39s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.52s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.65s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.78s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-0.91s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.04s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.17s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.30s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.43s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.56s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.69s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.82s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-1.95s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-2.08s;transform:none"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:linear-gradient(180deg, oklch(0.72 0.13 250), rgba(120,160,255,0.25));opacity:0.85;animation:none;animation-delay:-2.21s;transform:none"></div>
+
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px;">
+                    <span style="color:oklch(0.6 0.01 250);">ai/issue-124</span>
+                    <span style="color:oklch(0.74 0.01 250);">00:42</span>
+                  </div>
+                </div>
+
+                <div data-slot="impl1" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:rgba(255,255,255,0.012);padding:11px 12px;transition:border-color 400ms, background 400ms;box-shadow:none">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <div style="width:7px;height:7px;border-radius:2px;background:rgba(255,255,255,0.18);animation:none"></div>
+                      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; color:oklch(0.93 0.008 250); letter-spacing:0.04em;">CELL 2</div>
+                    </div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+                  </div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">awaiting dispatch</div>
+                  <div style="margin-top:9px; min-height:32px;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);"></div>
+                    <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; text-wrap:pretty;">—</div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:2px; height:22px; margin-top:8px;">
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:0.00s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.13s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.26s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.39s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.52s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.65s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.78s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.91s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.04s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.17s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.30s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.43s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.56s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.69s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.82s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.95s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.08s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.21s;transform:scaleY(0.14)"></div>
+
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px;">
+                    <span style="color:oklch(0.6 0.01 250);"></span>
+                    <span style="color:oklch(0.74 0.01 250);"></span>
+                  </div>
+                </div>
+
+                <div data-slot="impl2" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:rgba(255,255,255,0.012);padding:11px 12px;transition:border-color 400ms, background 400ms;box-shadow:none">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <div style="width:7px;height:7px;border-radius:2px;background:rgba(255,255,255,0.18);animation:none"></div>
+                      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; color:oklch(0.93 0.008 250); letter-spacing:0.04em;">CELL 3</div>
+                    </div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+                  </div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">awaiting dispatch</div>
+                  <div style="margin-top:9px; min-height:32px;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);"></div>
+                    <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; text-wrap:pretty;">—</div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:2px; height:22px; margin-top:8px;">
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:0.00s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.13s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.26s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.39s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.52s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.65s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.78s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.91s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.04s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.17s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.30s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.43s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.56s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.69s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.82s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.95s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.08s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.21s;transform:scaleY(0.14)"></div>
+
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px;">
+                    <span style="color:oklch(0.6 0.01 250);"></span>
+                    <span style="color:oklch(0.74 0.01 250);"></span>
+                  </div>
+                </div>
+
+                <div data-slot="impl3" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:rgba(255,255,255,0.012);padding:11px 12px;transition:border-color 400ms, background 400ms;box-shadow:none">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <div style="width:7px;height:7px;border-radius:2px;background:rgba(255,255,255,0.18);animation:none"></div>
+                      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; color:oklch(0.93 0.008 250); letter-spacing:0.04em;">CELL 4</div>
+                    </div>
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+                  </div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">awaiting dispatch</div>
+                  <div style="margin-top:9px; min-height:32px;">
+                    <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);"></div>
+                    <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; text-wrap:pretty;">—</div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:2px; height:22px; margin-top:8px;">
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:0.00s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.13s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.26s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.39s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.52s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.65s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.78s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-0.91s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.04s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.17s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.30s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.43s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.56s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.69s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.82s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-1.95s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.08s;transform:scaleY(0.14)"></div>
+
+                      <div style="flex:1;height:100%;border-radius:1px;transform-origin:bottom;background:rgba(255,255,255,0.05);opacity:0.5;animation:none;animation-delay:-2.21s;transform:scaleY(0.14)"></div>
+
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px;">
+                    <span style="color:oklch(0.6 0.01 250);"></span>
+                    <span style="color:oklch(0.74 0.01 250);"></span>
+                  </div>
+                </div>
+
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">REVIEW</div>
+
+              <div data-slot="rev0" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:rgba(255,255,255,0.012);padding:11px 12px;transition:border-color 400ms, background 400ms">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; letter-spacing:0.04em; color:oklch(0.93 0.008 250);">REV-01</div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+                </div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">quality control</div>
+                <div style="margin-top:9px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);"></div>
+                <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; min-height:15px;">—</div>
+                <div style="margin-top:9px; display:flex; flex-direction:column; gap:4px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px;">
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">AC</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">CRITICAL</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">HIGH</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">MEDIUM</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                </div>
+                <div style="margin-top:10px;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.12em;text-align:center;padding:5px;border-radius:4px;color:oklch(0.58 0.01 250);background:transparent;opacity:0;transition:all 300ms"></div>
+              </div>
+
+              <div data-slot="rev1" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:rgba(255,255,255,0.012);padding:11px 12px;transition:border-color 400ms, background 400ms">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; letter-spacing:0.04em; color:oklch(0.93 0.008 250);">REV-02</div>
+                  <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+                </div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">quality control</div>
+                <div style="margin-top:9px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);"></div>
+                <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; min-height:15px;">—</div>
+                <div style="margin-top:9px; display:flex; flex-direction:column; gap:4px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px;">
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">AC</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">CRITICAL</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">HIGH</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">MEDIUM</span>
+                      <span style="color:oklch(0.58 0.01 250)">—</span>
+                    </div>
+
+                </div>
+                <div style="margin-top:10px;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.12em;text-align:center;padding:5px;border-radius:4px;color:oklch(0.58 0.01 250);background:transparent;opacity:0;transition:all 300ms"></div>
+              </div>
+
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">SECURITY</div>
+            <div data-slot="sec" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 12px;background:rgba(255,255,255,0.012);transition:all 400ms">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">SEC-01</div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+              </div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">Codex · strong</div>
+              <div style="margin-top:9px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250);">—</div>
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:5px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px;">
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Auth</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Secrets</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Injection</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Data</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+              </div>
+              <div style="margin-top:10px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.6 0.01 250);">no security-gated task</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">CI / VERIFICATION</div>
+            <div data-slot="ci" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 12px;background:rgba(255,255,255,0.012);transition:all 400ms">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">CI</div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+              </div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250); margin-top:7px;">—</div>
+              <div style="position:relative; height:3px; margin:9px 0 10px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                <div style="position:absolute;top:0;left:0;height:100%;width:26%;border-radius:2px;background:linear-gradient(90deg, transparent, oklch(0.72 0.13 250), transparent);animation:none;opacity:0"></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px;">
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Unit</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Integration</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Type Check</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Lint</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">Build</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+              </div>
+              <div style="margin-top:10px;text-align:center;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.12em;padding:5px;border-radius:4px;color:oklch(0.74 0.13 165);background:rgba(100,230,190,0.12);opacity:0;transition:opacity 300ms"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">MERGE</div>
+            <div data-slot="merge" style="border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 12px;background:rgba(255,255,255,0.012);transition:all 400ms">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">MERGE GATE</div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.58 0.01 250);background:rgba(255,255,255,0.04)">IDLE</div>
+              </div>
+              <div style="margin-top:9px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; color:oklch(0.86 0.01 250); min-height:16px;">—</div>
+              <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; min-height:30px;">awaiting verified work</div>
+              <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10.5px;">
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">review</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">ci</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">conflicts</span>
+                    <span style="color:oklch(0.58 0.01 250)">—</span>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">DONE</div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.74 0.13 165);">18</div>
+            </div>
+            <div data-slot="done" style="border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:5px; min-height:220px;">
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:absolute; inset:0; pointer-events:none; z-index:30;"></div>
+    </div>
+
+    <div class="responsive-grid" style="display:grid; grid-template-columns:minmax(300px,0.85fr) minmax(360px,1.15fr); gap:14px;">
+      <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">GIT WORKTREES</div>
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.6 0.01 250);">1 isolated</div>
+        </div>
+        <div style="position:relative;">
+          <svg viewbox="0 0 320 150" preserveaspectratio="none" style="width:100%; height:150px; display:block; overflow:visible;">
+            <line x1="6" y1="138" x2="314" y2="138" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"></line>
+            <path d="M14 24 H210 C258 24 258 138 300 138" fill="none" stroke="rgba(120,160,255,0.42)" strokeWidth="1.2" strokeDasharray="340" strokeDashoffset="0" style="transition:stroke 500ms"></path><circle cx="14" cy="24" r="3" fill="oklch(0.72 0.13 250)"></circle><text x="20" y="18" fill="rgba(230,235,245,0.62)" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px">ai/issue-124</text>
+          </svg>
+          <div style="position:absolute; left:0; bottom:-4px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.7 0.01 250);">main</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">DEMO EVENT RAIL</div>
+          <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.6 0.01 250);">3 events</div>
+        </div>
+        <div style="height:186px; overflow:hidden; position:relative;"><div style="display:flex;flex-direction:column;gap:2px"><div style="display:grid;grid-template-columns:64px 8px 150px 1fr;gap:9px;align-items:center;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10.5px;padding:2px 0;animation:none"><span style="color:oklch(0.5 0.008 250)">09:41:00</span><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.72 0.13 250)"></span><span style="color:oklch(0.72 0.13 250);letter-spacing:0.04em">TASK_ASSIGNED</span><span style="color:oklch(0.74 0.008 250);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">#124 · Demo worker assigned · Codex / balanced</span></div><div style="display:grid;grid-template-columns:64px 8px 150px 1fr;gap:9px;align-items:center;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10.5px;padding:2px 0;animation:none"><span style="color:oklch(0.5 0.008 250)">09:40:00</span><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.74 0.13 165)"></span><span style="color:oklch(0.74 0.13 165);letter-spacing:0.04em">CI_PASSED</span><span style="color:oklch(0.74 0.008 250);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">#120 · Demo quality gate satisfied</span></div><div style="display:grid;grid-template-columns:64px 8px 150px 1fr;gap:9px;align-items:center;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10.5px;padding:2px 0;animation:none"><span style="color:oklch(0.5 0.008 250)">09:39:00</span><span style="width:5px;height:5px;border-radius:50%;background:oklch(0.74 0.13 165)"></span><span style="color:oklch(0.74 0.13 165);letter-spacing:0.04em">MERGED</span><span style="color:oklch(0.74 0.008 250);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">#118 · Demo pull request merged into main</span></div></div></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section id="agents" role="tabpanel" aria-labelledby="tab-agents" tabindex="0" hidden>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">AGENT ROSTER — CURRENT AND RECENT</div>
+      <div class="responsive-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px;">
+
+          <div style="border:1px solid rgba(120,160,255,0.26);border-radius:8px;padding:13px 14px;background:linear-gradient(180deg, rgba(120,160,255,0.05), rgba(255,255,255,0.012))">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:7px;height:7px;border-radius:2px;background:oklch(0.72 0.13 250);animation:none"></div>
+                <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:13px; font-weight:600; letter-spacing:0.04em;">COD-01</div>
+              </div>
+              <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:9px;letter-spacing:0.1em;padding:2px 6px;border-radius:3px;color:oklch(0.72 0.13 250);background:rgba(120,160,255,0.10)">ACTIVE</div>
+            </div>
+            <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; color:oklch(0.55 0.008 250); margin-top:4px;">implementer · Codex · balanced</div>
+            <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px; font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px;">
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">task</span><span style="color:oklch(0.88 0.01 250);">#124</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">worktree</span><span style="color:oklch(0.78 0.01 250);">.worktrees/issue-124</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">runtime</span><span style="color:oklch(0.88 0.01 250);">00:00</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">operation</span><span style="color:oklch(0.74 0.13 165)">Editing</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">result</span><span style="color:oklch(0.58 0.01 250)">—</span></div>
+            </div>
+          </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="events" role="tabpanel" aria-labelledby="tab-events" tabindex="0" hidden>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div style="font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250); margin-right:6px;">OPERATIONAL EVENT LOG</div>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(120,160,255,0.4);background:rgba(120,160,255,0.12);color:oklch(0.9 0.02 250)">ALL</button>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.09);background:transparent;color:oklch(0.58 0.01 250)">ASSIGN</button>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.09);background:transparent;color:oklch(0.58 0.01 250)">REVIEW</button>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.09);background:transparent;color:oklch(0.58 0.01 250)">CI</button>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.09);background:transparent;color:oklch(0.58 0.01 250)">MERGE</button>
+
+          <button type="button" data-filter="" aria-pressed="false" style="font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:10px;letter-spacing:0.08em;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.09);background:transparent;color:oklch(0.58 0.01 250)">HUMAN</button>
+
+      </div>
+      <div style="border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(255,255,255,0.014); overflow:hidden;">
+        <div class="event-row" style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:9px 14px; border-bottom:1px solid rgba(255,255,255,0.08); font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:9.5px; letter-spacing:0.1em; color:oklch(0.5 0.008 250);">
+          <div>TIME</div><div>EVENT</div><div>ISSUE</div><div>DETAIL</div>
+        </div>
+        <div style="max-height:calc(100vh - 210px); overflow-y:auto;">
+
+            <div class="event-row" style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.045); font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; align-items:baseline;">
+              <div style="color:oklch(0.55 0.008 250);">09:41:00</div>
+              <div style="color:oklch(0.72 0.13 250);letter-spacing:0.04em">TASK_ASSIGNED</div>
+              <div style="color:oklch(0.72 0.01 250);">#124</div>
+              <div style="color:oklch(0.82 0.008 250); font-family:Archivo,sans-serif; font-size:12px;">Demo worker assigned · Codex / balanced</div>
+            </div>
+
+            <div class="event-row" style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.045); font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; align-items:baseline;">
+              <div style="color:oklch(0.55 0.008 250);">09:40:00</div>
+              <div style="color:oklch(0.74 0.13 165);letter-spacing:0.04em">CI_PASSED</div>
+              <div style="color:oklch(0.72 0.01 250);">#120</div>
+              <div style="color:oklch(0.82 0.008 250); font-family:Archivo,sans-serif; font-size:12px;">Demo quality gate satisfied</div>
+            </div>
+
+            <div class="event-row" style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.045); font-family:&#x27;IBM Plex Mono&#x27;,monospace; font-size:11px; align-items:baseline;">
+              <div style="color:oklch(0.55 0.008 250);">09:39:00</div>
+              <div style="color:oklch(0.74 0.13 165);letter-spacing:0.04em">MERGED</div>
+              <div style="color:oklch(0.72 0.01 250);">#118</div>
+              <div style="color:oklch(0.82 0.008 250); font-family:Archivo,sans-serif; font-size:12px;">Demo pull request merged into main</div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<noscript>Demo tabs require JavaScript. The Factory fixture remains available below the header.</noscript></body></html>

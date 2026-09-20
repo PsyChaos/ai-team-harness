@@ -1,5 +1,6 @@
 // Package ghgateway defines the read boundary for normalized GitHub state.
-// No authentication, network implementation, or mutation is provided yet.
+// Gateway reconstructs recorded or supplied API responses without mutations.
+// Transport and authentication belong to the caller-provided Source.
 package ghgateway
 
 import (

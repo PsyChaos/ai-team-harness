@@ -1,0 +1,37 @@
+
+  html, body { margin:0; padding:0; background:#0b0d11; }
+  * { box-sizing:border-box; }
+  a { color:oklch(0.74 0.12 250); text-decoration:none; }
+  a:hover { color:oklch(0.84 0.12 250); }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.12); border-radius:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  @keyframes wv { 0%,100% { transform:scaleY(0.18); } 50% { transform:scaleY(1); } }
+  @keyframes scan { 0% { transform:translateX(-110%); } 100% { transform:translateX(420%); } }
+  @keyframes bp { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+  @keyframes ring { 0% { transform:scale(0.5); opacity:0.65; } 100% { transform:scale(2.4); opacity:0; } }
+  @keyframes fin { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+  @keyframes drift { 0% { background-position:0 0; } 100% { background-position:60px 0; } }
+
+[hidden] { display:none !important; }
+button { font:11px 'IBM Plex Mono',ui-monospace,monospace; cursor:pointer; }
+[role=tab] { padding:6px 14px; border:0; border-radius:4px; background:transparent; color:#a1a8b5; }
+[role=tab][aria-selected=true] { background:rgba(255,255,255,.10); color:#f0f2f5; }
+:focus-visible { outline:2px solid #81b7ff; outline-offset:3px; }
+.skip { position:absolute; top:-80px; left:12px; z-index:100; padding:10px; background:#14181f; }
+.skip:focus { top:8px; }
+[data-filter][aria-pressed=true] { outline:1px solid #81b7ff; }
+.demo-notice { margin:0; padding:8px 20px; color:#a1a8b5; background:#0b0d11; font:11px ui-monospace,monospace; }
+@media(max-width:900px) {
+ .overview,.responsive-grid { grid-template-columns:1fr !important; }
+ .task-flow { min-width:0 !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+ .event-row { grid-template-columns:70px minmax(0,1fr) !important; overflow-wrap:anywhere; }
+}
+@media(max-width:520px) {
+ .task-flow { grid-template-columns:1fr !important; }
+ [role=tabpanel] { min-width:0; }
+ svg { max-width:100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+ *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}

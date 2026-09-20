@@ -31,6 +31,8 @@ jobs:
           for fixture in internal/domain/testdata/*.json; do
             diff -u "$fixture" "$RUNNER_TEMP/contracts/$(basename "$fixture")"
           done
+      - name: GitHub reader parity
+        run: python3 internal/ghgateway/testdata/parity.py
       - name: Python tests
         run: python3 -m unittest discover -s .ai-team/tests -p 'test_*.py'
       - name: Secret and provider boundaries
