@@ -7,7 +7,13 @@ source "$SCRIPT_DIR/lib.sh"
 load_runtime
 
 echo "== Coordinator timer =="
-systemctl --user status ai-harness-coordinator.timer --no-pager || true
+COORDINATOR_UNIT="${HARNESS_COORDINATOR_UNIT:-ai-harness-coordinator}"
+[[ "$COORDINATOR_UNIT" =~ ^ai-harness-[a-z0-9-]+$ ]] || { echo "Invalid coordinator unit" >&2; exit 1; }
+systemctl --user status "$COORDINATOR_UNIT.timer" --no-pager || true
+
+echo
+echo "== Last coordinator cycle =="
+systemctl --user show "$COORDINATOR_UNIT.service" --property=ActiveState,Result,ExecMainExitTimestamp --no-pager || true
 
 echo
 echo "== Harness units =="
@@ -17,3 +23,7 @@ echo
 echo "== GitHub Project items =="
 gh project item-list "$HARNESS_PROJECT_NUMBER" --owner "$HARNESS_PROJECT_OWNER" --limit 100 \
   --field "Harness Status" --field "Provider" --field "Model" --field "Retry Count" || true
+
+echo
+echo "WAITING_HUMAN: inspect the issue's harness transition comments and local result."
+echo "After correcting the cause: coordinator-broker resume --issue N --reason 'what was fixed'"

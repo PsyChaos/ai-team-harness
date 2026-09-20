@@ -67,6 +67,25 @@ PROMPT="$(
   printf '\n\n--- ASSIGNED WORK PACK ---\n\n'
   cat "$PACK"
   printf '\n\n--- RUNTIME ROUTING ---\nProvider: %s\nModel profile: %s\n' "$PROVIDER" "$MODEL_PROFILE"
+  if [[ "$ROLE" == "implementer" ]]; then
+    cat <<'HANDOFF'
+
+--- BROKER IMPLEMENTATION HANDOFF PROTOCOL ---
+This extends the older role-skill outcome schema. The coordinator publishes your
+local commit, then runs hosted CI and dispatches independent review. Never push
+or query GitHub to obtain CI evidence yourself. Do not fabricate passing checks.
+If implementation and locally available checks are complete, but hosted CI or
+browser validation cannot run in this sandbox, report VALIDATION_PENDING rather
+than retrying the same unavailable infrastructure or claiming SUCCESS. Keep each
+unverified acceptance bullet unchecked and prefix it exactly with [external:ci]
+or [external:browser], e.g. '- [ ] [external:ci] Hosted CI has not run yet.'
+All other acceptance bullets must be completed and evidenced. Incomplete code or
+failed executable local checks still require PARTIAL or FAILED. Pending external
+validation permits publication and review only; it never grants merge approval.
+Preserve existing implementation commits. If only handing off external checks,
+reuse the current clean HEAD; do not create documentation-only retry commits.
+HANDOFF
+  fi
 )"
 
 run_and_capture() {
