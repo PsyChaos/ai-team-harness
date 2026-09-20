@@ -644,9 +644,11 @@ class BrokerSecurityTests(unittest.TestCase):
                  mock.patch.object(BROKER, "fresh_lifecycle_item", return_value=item("IN_PROGRESS")), \
                  mock.patch.object(BROKER, "unit_active", return_value=False), \
                  mock.patch.object(BROKER, "require_project_status"), \
+                 mock.patch.object(BROKER, "set_project_field") as evidence, \
                  mock.patch.object(BROKER, "set_status") as status:
                 BROKER.reconcile_implementation(action)
             status.assert_called_once_with("PVTI_1", "RETRY_PENDING")
+            self.assertEqual(evidence.call_args.args[1], "Evidence")
 
     def test_finalize_records_and_closes_before_done_then_cleans_clone(self):
         action = {"issue": 7, "item_id": "PVTI_1", "pr": 9,

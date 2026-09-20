@@ -61,6 +61,9 @@ done
 BWRAP_ARGS+=(--unshare-pid --unshare-uts --unshare-ipc --proc /proc --new-session --die-with-parent)
 
 provider_enabled "$PROVIDER" || { echo "Provider disabled: $PROVIDER" >&2; exit 3; }
+if [[ "$PROVIDER" == "claude" ]]; then
+  bash "$SCRIPT_DIR/refresh-claude-auth"
+fi
 ROOT_REAL="$(realpath -e -- "$HARNESS_ROOT")"
 WORKDIR_REAL="$(realpath -e -- "$WORKDIR")"
 PACK_REAL="$(realpath -e -- "$PACK")"

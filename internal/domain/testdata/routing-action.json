@@ -1,0 +1,13 @@
+{
+  "decisions": {
+    "action": {
+      "confidence": null,
+      "probabilities": {},
+      "source": "rules",
+      "threshold": null,
+      "value": "retry"
+    }
+  },
+  "engine": "rules",
+  "kind": "action"
+}

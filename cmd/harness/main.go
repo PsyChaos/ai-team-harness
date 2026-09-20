@@ -22,5 +22,6 @@ func main() {
 		IdleTimeout:       60 * time.Second,
 	}
 	log.Printf("Factory Floor Demo: http://%s (offline fixtures only)", *listen)
+	log.Print("Go dashboard only; use .ai-team/bin/coordinator-broker for execution")
 	log.Fatal(server.ListenAndServe())
 }

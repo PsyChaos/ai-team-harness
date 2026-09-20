@@ -1,5 +1,42 @@
 # Recovery
 
+## Operator recovery and visible progress
+
+`status` reads `HARNESS_COORDINATOR_UNIT` (default `ai-harness-coordinator`).
+Set it to the actual repository-specific timer basename. Harness transitions
+also synchronize GitHub's standard Status field: active implementation, review,
+and publication stages map to In Progress; DONE maps to Done. Detailed states
+remain in Harness Status. Issue comments record transitions and available
+evidence; a timer tick overlapping an existing cycle is skipped successfully.
+
+After fixing the cause of a WAITING_HUMAN implementation, use:
+
+```bash
+.ai-team/bin/coordinator-broker resume --issue 3 --reason 'Describe the corrected cause'
+.ai-team/bin/coordinator-broker sync-status
+```
+
+Resume preserves the clone, audits the previous attempt count, and grants one
+additional implementation attempt. It never approves acceptance or merges code.
+Do not repeatedly resume an unchanged failure.
+
+Complete local implementations may report VALIDATION_PENDING, keeping only
+`- [ ] [external:ci] ...` or `- [ ] [external:browser] ...` unchecked. Publication
+precedes hosted CI. Ordinary incomplete implementation still fails the handoff.
+Independent review and CI remain required; a deferred browser check additionally
+requires a signed successful external report bound to the exact commit.
+
+An operator who has actually performed external browser validation can supply
+`resume --validation-report /absolute/report.md`. The report must name the full
+current HEAD and include a `Decision: PASS` or `Decision: APPROVE` line. The broker
+signs this evidence and supplies it to the retry worker and reviewer; a changed
+HEAD invalidates it. Never use this option to waive missing validation.
+
+Reviewer process failures are retried separately, within HARNESS_MAX_RETRIES;
+they do not trigger implementation changes. Before launching Claude, an expired
+file-backed OAuth credential is refreshed by the trusted CLI outside the
+read-only worker mount, with tools, hooks, MCP, and repository settings disabled.
+
 The deterministic broker reconstructs each action from GitHub, Git, systemd, and
 strict local evidence. Snapshots expire after five minutes and apply rechecks the
 item fingerprint plus bound PR/head/result digests. A cycle advances at most one

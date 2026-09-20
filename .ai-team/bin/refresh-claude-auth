@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Refresh expired file-backed OAuth before the provider enters a read-only
+# worker mount. Only the trusted CLI handles credentials; never print them.
+if python3 - "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json" <<'PY'
+import json
+from pathlib import Path
+import sys
+import time
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+    expires = data.get("claudeAiOauth", {}).get("expiresAt")
+except (OSError, ValueError, TypeError):
+    raise SystemExit(1)
+raise SystemExit(0 if isinstance(expires, (int, float)) and expires <= time.time() * 1000 + 60_000 else 1)
+PY
+then
+  # No repository instructions, MCP servers, hooks, tools, or harness secrets.
+  cd /tmp
+  env -u HARNESS_BOOTSTRAP_HMAC_KEY -u HARNESS_BROKER_HMAC_KEY \
+    -u TYPESAFE_API_KEY -u GH_TOKEN -u GITHUB_TOKEN \
+    timeout 90 claude -p --tools '' --setting-sources '' \
+    --settings '{"disableAllHooks":true}' --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
+    --no-session-persistence --max-turns 1 'Reply only AUTH_OK.' >/dev/null
+fi
