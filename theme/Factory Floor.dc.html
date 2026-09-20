@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; background:#0b0d11; }
+  * { box-sizing:border-box; }
+  a { color:oklch(0.74 0.12 250); text-decoration:none; }
+  a:hover { color:oklch(0.84 0.12 250); }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.12); border-radius:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  @keyframes wv { 0%,100% { transform:scaleY(0.18); } 50% { transform:scaleY(1); } }
+  @keyframes scan { 0% { transform:translateX(-110%); } 100% { transform:translateX(420%); } }
+  @keyframes bp { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+  @keyframes ring { 0% { transform:scale(0.5); opacity:0.65; } 100% { transform:scale(2.4); opacity:0; } }
+  @keyframes fin { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+  @keyframes drift { 0% { background-position:0 0; } 100% { background-position:60px 0; } }
+</style>
+</helmet>
+<div style="min-height:100vh; background:radial-gradient(1200px 600px at 50% -10%, #14181f 0%, #0b0d11 60%); color:oklch(0.93 0.004 250); font-family:Archivo, Helvetica, sans-serif; display:flex; flex-direction:column;">
+
+  <div style="display:flex; align-items:center; gap:24px; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,0.07); background:rgba(11,13,17,0.86); backdrop-filter:blur(8px); position:sticky; top:0; z-index:40; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:10px; height:10px; border-radius:2px; background:oklch(0.74 0.13 165); animation:bp 2.4s ease-in-out infinite;"></div>
+      <div style="font-size:14px; font-weight:700; letter-spacing:0.02em;">AI TEAM HARNESS</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.62 0.01 250); border-left:1px solid rgba(255,255,255,0.12); padding-left:10px;">Vensift Website</div>
+    </div>
+
+    <div style="display:flex; gap:2px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px;">
+      <button type="button" onClick="{{ goFactory }}" style="{{ tabFactory }}">Factory</button>
+      <button type="button" onClick="{{ goAgents }}" style="{{ tabAgents }}">Agents</button>
+      <button type="button" onClick="{{ goEvents }}" style="{{ tabEvents }}">Events</button>
+    </div>
+
+    <div style="display:flex; gap:18px; margin-left:auto; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:11px;">
+      <sc-for list="{{ hud }}" as="m" hint-placeholder-count="6">
+        <div style="display:flex; flex-direction:column; gap:3px; min-width:62px;">
+          <div style="color:oklch(0.55 0.008 250); letter-spacing:0.08em; font-size:9px;">{{ m.label }}</div>
+          <div style="{{ m.valCss }}">{{ m.value }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:7px; padding:5px 10px; border:1px solid rgba(255,255,255,0.08); border-radius:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.62 0.01 250);">
+      <span style="width:6px; height:6px; border-radius:50%; background:oklch(0.74 0.13 165); animation:bp 1.6s ease-in-out infinite;"></span>
+      <span>GitHub synced {{ syncAgo }}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ isFactory }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:16px 20px 22px; display:flex; flex-direction:column; gap:14px;">
+
+    <div ref="{{ stageRef }}" style="position:relative; display:flex; flex-direction:column; gap:14px;">
+
+      <div style="display:grid; grid-template-columns:minmax(260px,1fr) minmax(280px,1.15fr) minmax(240px,0.95fr); gap:14px; align-items:stretch;">
+
+        <div data-slot="tower" style="position:relative; border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:linear-gradient(180deg, rgba(120,160,255,0.07), rgba(255,255,255,0.015)); padding:14px 16px; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+            <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:'IBM Plex Mono',monospace;">CONTROL TOWER</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.72 0.13 250);">CYCLE #{{ cycle }}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="position:relative; width:30px; height:30px; display:grid; place-items:center;">
+              <div style="{{ towerRingCss }}"></div>
+              <div style="width:11px; height:11px; border-radius:3px; background:oklch(0.72 0.13 250);"></div>
+            </div>
+            <div>
+              <div style="font-size:16px; font-weight:600; line-height:1.1;">Coordinator</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.62 0.01 250);">Claude · strong · {{ engineLabel }}</div>
+            </div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:oklch(0.86 0.02 250); min-height:18px;">{{ coordActivity }}</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <div style="flex:1; height:2px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
+              <div style="{{ cycleBarCss }}"></div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.62 0.01 250);">next {{ nextCycle }}</div>
+          </div>
+        </div>
+
+        <div data-slot="jev" style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px; display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+            <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:'IBM Plex Mono',monospace;">DECISION ENGINE</div>
+            <div style="{{ jevBadgeCss }}">{{ jevSource }}</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:oklch(0.86 0.02 250); margin-bottom:10px;">{{ jevHeadline }}</div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <sc-for list="{{ jevRows }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:56px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.008 250);">{{ r.group }}</div>
+                <div style="width:62px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.9 0.01 250);">{{ r.choice }}</div>
+                <div style="flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                  <div style="{{ r.barCss }}"></div>
+                </div>
+                <div style="width:32px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.72 0.01 250);">{{ r.score }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px;">
+          <div style="font-size:10px; letter-spacing:0.14em; color:oklch(0.62 0.01 250); font-family:'IBM Plex Mono',monospace; margin-bottom:12px;">PHASES</div>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+            <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; font-size:12px; color:oklch(0.82 0.008 250);">{{ p.name }}</div>
+                <div style="width:88px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                  <div style="{{ p.barCss }}"></div>
+                </div>
+                <div style="width:34px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.68 0.01 250);">{{ p.pct }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ humanGate }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:16px; border:1px solid oklch(0.62 0.10 75 / 0.55); background:linear-gradient(90deg, oklch(0.62 0.10 75 / 0.14), rgba(255,255,255,0.01)); border-radius:8px; padding:12px 16px;">
+          <div style="width:8px; height:8px; border-radius:50%; background:oklch(0.80 0.13 75); animation:bp 1.4s ease-in-out infinite;"></div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.80 0.13 75);">HUMAN DECISION REQUIRED</div>
+          <div style="font-size:13px; color:oklch(0.92 0.008 250);">#{{ humanGateId }} · {{ humanGateTitle }}</div>
+          <button type="button" onClick="{{ resolveHuman }}" style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#0b0d11; background:oklch(0.80 0.13 75); border:0; border-radius:5px; padding:7px 14px; cursor:pointer; font-weight:600;">Review Decision</button>
+        </div>
+      </sc-if>
+
+      <div style="overflow-x:auto; padding-bottom:4px;">
+        <div style="min-width:1340px; display:grid; grid-template-columns:0.92fr 2fr 1.12fr 0.86fr 1fr 1fr 0.8fr; gap:10px; align-items:start;">
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">READY QUEUE</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.74 0.13 165);">{{ readyCount }}</div>
+            </div>
+            <div data-slot="ready" style="min-height:220px; border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:6px;">
+              <sc-for list="{{ readyTasks }}" as="t" hint-placeholder-count="4">
+                <div style="border:1px solid rgba(255,255,255,0.09); border-left:2px solid oklch(0.74 0.13 165); border-radius:5px; background:rgba(255,255,255,0.03); padding:7px 9px; animation:fin 320ms ease-out;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.9 0.01 250);">#{{ t.id }}</div>
+                    <div style="{{ t.prioCss }}">{{ t.prio }}</div>
+                  </div>
+                  <div style="font-size:11.5px; color:oklch(0.78 0.008 250); line-height:1.3; margin-top:3px; text-wrap:pretty;">{{ t.title }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250); margin-top:2px;">BLOCKED</div>
+            <div style="border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:6px; min-height:56px;">
+              <sc-for list="{{ blockedTasks }}" as="b" hint-placeholder-count="2">
+                <div style="{{ b.wrapCss }}">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.72 0.01 250);">#{{ b.id }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:oklch(0.58 0.01 250);">{{ b.area }}</div>
+                  </div>
+                  <div style="font-size:11px; color:oklch(0.64 0.008 250); line-height:1.3; margin-top:2px;">{{ b.title }}</div>
+                  <div style="{{ b.depCss }}">
+                    <span style="width:14px; height:1px; background:currentColor; display:inline-block;"></span>
+                    <span>requires #{{ b.blockedBy }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">IMPLEMENTATION</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.68 0.01 250);">{{ busyImpl }} / 4 cells</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <sc-for list="{{ implSlots }}" as="s" hint-placeholder-count="4">
+                <div data-slot="{{ s.slotId }}" style="{{ s.cardCss }}">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <div style="{{ s.dotCss }}"></div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:oklch(0.93 0.008 250); letter-spacing:0.04em;">{{ s.agentId }}</div>
+                    </div>
+                    <div style="{{ s.stateCss }}">{{ s.stateLabel }}</div>
+                  </div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">{{ s.providerLine }}</div>
+                  <div style="margin-top:9px; min-height:32px;">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.86 0.01 250);">{{ s.taskRef }}</div>
+                    <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; text-wrap:pretty;">{{ s.taskTitle }}</div>
+                  </div>
+                  <div style="display:flex; align-items:flex-end; gap:2px; height:22px; margin-top:8px;">
+                    <sc-for list="{{ s.wave }}" as="w" hint-placeholder-count="16">
+                      <div style="{{ w.css }}"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10px;">
+                    <span style="color:oklch(0.6 0.01 250);">{{ s.branch }}</span>
+                    <span style="color:oklch(0.74 0.01 250);">{{ s.runtime }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">REVIEW</div>
+            <sc-for list="{{ reviewSlots }}" as="r" hint-placeholder-count="2">
+              <div data-slot="{{ r.slotId }}" style="{{ r.cardCss }}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:0.04em; color:oklch(0.93 0.008 250);">{{ r.agentId }}</div>
+                  <div style="{{ r.stateCss }}">{{ r.stateLabel }}</div>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">{{ r.providerLine }}</div>
+                <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.86 0.01 250);">{{ r.taskRef }}</div>
+                <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; min-height:15px;">{{ r.taskTitle }}</div>
+                <div style="margin-top:9px; display:flex; flex-direction:column; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:10.5px;">
+                  <sc-for list="{{ r.findings }}" as="f" hint-placeholder-count="4">
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:oklch(0.58 0.008 250); letter-spacing:0.06em;">{{ f.k }}</span>
+                      <span style="{{ f.css }}">{{ f.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="{{ r.verdictCss }}">{{ r.verdict }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">SECURITY</div>
+            <div data-slot="sec" style="{{ secCardCss }}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">SEC-01</div>
+                <div style="{{ secStateCss }}">{{ secStateLabel }}</div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:oklch(0.55 0.008 250); margin-top:3px;">Codex · strong</div>
+              <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.86 0.01 250);">{{ secTaskRef }}</div>
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px;">
+                <sc-for list="{{ secChecks }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">{{ c.k }}</span>
+                    <span style="{{ c.css }}">{{ c.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.6 0.01 250);">{{ secSummary }}</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">CI / VERIFICATION</div>
+            <div data-slot="ci" style="{{ ciCardCss }}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">{{ ciId }}</div>
+                <div style="{{ ciStateCss }}">{{ ciStateLabel }}</div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.86 0.01 250); margin-top:7px;">{{ ciTaskRef }}</div>
+              <div style="position:relative; height:3px; margin:9px 0 10px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+                <div style="{{ ciScanCss }}"></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px;">
+                <sc-for list="{{ ciChecks }}" as="c" hint-placeholder-count="5">
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">{{ c.k }}</span>
+                    <span style="{{ c.css }}">{{ c.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="{{ ciGateCss }}">{{ ciGate }}</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">MERGE</div>
+            <div data-slot="merge" style="{{ mergeCardCss }}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; letter-spacing:0.04em;">MERGE GATE</div>
+                <div style="{{ mergeStateCss }}">{{ mergeStateLabel }}</div>
+              </div>
+              <div style="margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.86 0.01 250); min-height:16px;">{{ mergePr }}</div>
+              <div style="font-size:11.5px; color:oklch(0.72 0.008 250); line-height:1.3; min-height:30px;">{{ mergeTitle }}</div>
+              <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px;">
+                <sc-for list="{{ mergeGates }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex; justify-content:space-between;">
+                    <span style="color:oklch(0.62 0.008 250);">{{ g.k }}</span>
+                    <span style="{{ g.css }}">{{ g.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">DONE</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.74 0.13 165);">{{ mergedToday }}</div>
+            </div>
+            <div data-slot="done" style="border:1px solid rgba(255,255,255,0.07); border-radius:8px; background:rgba(255,255,255,0.014); padding:8px; display:flex; flex-direction:column; gap:5px; min-height:220px;">
+              <sc-for list="{{ doneTasks }}" as="d" hint-placeholder-count="5">
+                <div style="{{ d.css }}">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.78 0.06 165);">#{{ d.id }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:oklch(0.5 0.008 250);">{{ d.at }}</span>
+                  </div>
+                  <div style="font-size:10.5px; color:oklch(0.6 0.008 250); line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ d.title }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:absolute; inset:0; pointer-events:none; z-index:30;">{{ overlay }}</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:minmax(300px,0.85fr) minmax(360px,1.15fr); gap:14px;">
+      <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">GIT WORKTREES</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.6 0.01 250);">{{ worktreeCount }} isolated</div>
+        </div>
+        <div style="position:relative;">
+          <svg viewBox="0 0 320 150" preserveAspectRatio="none" style="width:100%; height:150px; display:block; overflow:visible;">
+            <line x1="6" y1="138" x2="314" y2="138" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"></line>
+            {{ branchPaths }}
+          </svg>
+          <div style="position:absolute; left:0; bottom:-4px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.7 0.01 250);">main</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(255,255,255,0.09); border-radius:8px; background:rgba(255,255,255,0.018); padding:14px 16px; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">LIVE EVENT RAIL</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.6 0.01 250);">{{ eventCount }} events</div>
+        </div>
+        <div style="height:186px; overflow:hidden; position:relative;">{{ rail }}</div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isAgents }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250);">AGENT ROSTER — CURRENT AND RECENT</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px;">
+        <sc-for list="{{ roster }}" as="a" hint-placeholder-count="8">
+          <div style="{{ a.cardCss }}">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="{{ a.dotCss }}"></div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; letter-spacing:0.04em;">{{ a.id }}</div>
+              </div>
+              <div style="{{ a.stateCss }}">{{ a.state }}</div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:oklch(0.55 0.008 250); margin-top:4px;">{{ a.role }} · {{ a.provider }} · {{ a.profile }}</div>
+            <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11px;">
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">task</span><span style="color:oklch(0.88 0.01 250);">{{ a.task }}</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">worktree</span><span style="color:oklch(0.78 0.01 250);">{{ a.worktree }}</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">runtime</span><span style="color:oklch(0.88 0.01 250);">{{ a.runtime }}</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">operation</span><span style="{{ a.opCss }}">{{ a.op }}</span></div>
+              <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.55 0.008 250);">result</span><span style="{{ a.resultCss }}">{{ a.result }}</span></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:oklch(0.58 0.01 250); margin-right:6px;">OPERATIONAL EVENT LOG</div>
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <button type="button" onClick="{{ f.onClick }}" style="{{ f.css }}">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(255,255,255,0.014); overflow:hidden;">
+        <div style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:9px 14px; border-bottom:1px solid rgba(255,255,255,0.08); font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:oklch(0.5 0.008 250);">
+          <div>TIME</div><div>EVENT</div><div>ISSUE</div><div>DETAIL</div>
+        </div>
+        <div style="max-height:calc(100vh - 210px); overflow-y:auto;">
+          <sc-for list="{{ eventLog }}" as="e" hint-placeholder-count="14">
+            <div style="display:grid; grid-template-columns:96px 210px 78px 1fr; gap:12px; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.045); font-family:'IBM Plex Mono',monospace; font-size:11px; align-items:baseline;">
+              <div style="color:oklch(0.55 0.008 250);">{{ e.time }}</div>
+              <div style="{{ e.kindCss }}">{{ e.kind }}</div>
+              <div style="color:oklch(0.72 0.01 250);">{{ e.issue }}</div>
+              <div style="color:oklch(0.82 0.008 250); font-family:Archivo,sans-serif; font-size:12px;">{{ e.detail }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;simSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.4,&quot;max&quot;:2.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Simulation&quot;},&quot;showJev&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Simulation&quot;},&quot;reducedMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Accessibility&quot;}}">
+const GREEN='oklch(0.74 0.13 165)', BLUE='oklch(0.72 0.13 250)', AMBER='oklch(0.80 0.13 75)', RED='oklch(0.68 0.16 25)', DIM='oklch(0.58 0.01 250)';
+const MONO="'IBM Plex Mono',monospace";
+const SEED=[
+ {id:124,title:'OAuth refresh token race condition',prio:'HIGH',area:'Backend',phase:1,sec:true},
+ {id:126,title:'Rate limiter for public API',prio:'MED',area:'Backend',phase:1},
+ {id:129,title:'Session cookie hardening',prio:'HIGH',area:'Security',phase:1,sec:true},
+ {id:131,title:'Pricing page responsive grid',prio:'LOW',area:'Frontend',phase:2},
+ {id:133,title:'Webhook retry backoff',prio:'MED',area:'Backend',phase:2},
+ {id:138,title:'Audit log export endpoint',prio:'MED',area:'Backend',phase:2},
+ {id:141,title:'Editor keyboard shortcuts',prio:'LOW',area:'Frontend',phase:2},
+ {id:143,title:'Stripe webhook idempotency',prio:'HIGH',area:'Backend',phase:2,sec:true},
+ {id:147,title:'Search index incremental sync',prio:'MED',area:'Platform',phase:3},
+ {id:150,title:'Frontend auth integration',prio:'HIGH',area:'Frontend',phase:2,blockedBy:124},
+ {id:152,title:'Billing portal SSO handoff',prio:'MED',area:'Backend',phase:3,blockedBy:129},
+ {id:156,title:'Content model migration',prio:'MED',area:'Platform',phase:3,blockedBy:138},
+ {id:159,title:'Locale routing middleware',prio:'LOW',area:'Frontend',phase:3},
+ {id:163,title:'Image pipeline cache keys',prio:'MED',area:'Platform',phase:3},
+ {id:168,title:'Error budget alerting',prio:'MED',area:'Platform',phase:4},
+ {id:172,title:'Load test harness',prio:'LOW',area:'Platform',phase:4}
+];
+const OPS=['Reading','Analyzing','Editing','Testing','Committing'];
+const PROVIDERS={codex:{pre:'COD',label:'Codex'},claude:{pre:'CLA',label:'Claude'},gemini:{pre:'GEM',label:'Gemini'}};
+const pad=n=>String(n).padStart(2,'0');
+const clock=t=>pad(Math.floor(t/60))+':'+pad(Math.floor(t%60));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    const tasks=SEED.map(s=>Object.assign({},s,{stage:s.blockedBy?'BLOCKED':'BACKLOG',prog:0,agent:null,pr:null}));
+    tasks.slice(0,4).forEach(t=>{ if(t.stage==='BACKLOG') t.stage='READY'; });
+    this.state={
+      view:'factory', t:0, cycle:1842, cycleLeft:1.2, coordActivity:'Reconciling GitHub project state',
+      tasks, impl:[null,null,null,null], review:[null,null], sec:null, ci:null, merge:null,
+      agents:[], events:[], flyers:[], pulses:[], jev:null, jevSource:'Jev',
+      done:[], mergedToday:18, syncAgo:2, humanTask:null, filter:'ALL', seq:1, branchMerging:null
+    };
+    this.stageRef=React.createRef();
+    this.emit=this.emit.bind(this);
+  }
+  componentDidMount(){ this.iv=setInterval(()=>this.tick(),450); this.log('PROJECT_STARTED','—','Vensift Website production resumed'); }
+  componentWillUnmount(){ clearInterval(this.iv); this.timers&&this.timers.forEach(clearTimeout); }
+  later(fn,ms){ (this.timers=this.timers||[]).push(setTimeout(fn,ms)); }
+
+  log(kind,issue,detail){
+    this.setState(s=>{
+      const d=new Date(Date.now());
+      const e={id:s.seq,time:pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()),kind,issue,detail};
+      return {seq:s.seq+1,events:[e].concat(s.events).slice(0,220)};
+    });
+  }
+  emit(){}
+
+  center(slot){
+    const root=this.stageRef.current; if(!root) return null;
+    const el=root.querySelector('[data-slot="'+slot+'"]'); if(!el) return null;
+    const r=el.getBoundingClientRect(), b=root.getBoundingClientRect();
+    return {x:r.left-b.left+r.width/2, y:r.top-b.top+r.height/2};
+  }
+  fly(from,to,label,color){
+    if(this.props.reducedMotion) return;
+    const a=this.center(from), b=this.center(to); if(!a||!b) return;
+    const key='f'+(this._fk=(this._fk||0)+1);
+    const f={key,x0:a.x,y0:a.y,x1:b.x,y1:b.y,label,color,on:false};
+    this.setState(s=>({flyers:s.flyers.concat([f])}));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      this.setState(s=>({flyers:s.flyers.map(z=>z.key===key?Object.assign({},z,{on:true}):z)}));
+    }));
+    this.later(()=>this.setState(s=>({flyers:s.flyers.filter(z=>z.key!==key)})),1150);
+  }
+  pulse(to,color){
+    if(this.props.reducedMotion) return;
+    const a=this.center('tower'), b=this.center(to); if(!a||!b) return;
+    const key='p'+(this._pk=(this._pk||0)+1);
+    this.setState(s=>({pulses:s.pulses.concat([{key,x0:a.x,y0:a.y,x1:b.x,y1:b.y,color,on:false}])}));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      this.setState(s=>({pulses:s.pulses.map(z=>z.key===key?Object.assign({},z,{on:true}):z)}));
+    }));
+    this.later(()=>this.setState(s=>({pulses:s.pulses.filter(z=>z.key!==key)})),900);
+  }
+
+  route(task){
+    const hi=task.area==='Frontend'?'claude':(task.prio==='HIGH'?'codex':pick(['codex','claude','gemini']));
+    const conf=0.55+Math.random()*0.42;
+    const low=conf<0.62;
+    const others=Object.keys(PROVIDERS).filter(k=>k!==hi);
+    const profile=task.prio==='HIGH'?'strong':(task.prio==='MED'?'balanced':'fast');
+    const rows=[
+      {group:'PROVIDER',choice:PROVIDERS[hi].label,score:conf},
+      {group:'MODEL',choice:profile,score:Math.min(0.97,conf+0.05)},
+      {group:'REVIEW',choice:task.sec?'security':'standard',score:Math.max(0.6,conf-0.04)}
+    ];
+    this.setState({jev:{rows,task:task.id,conf,low},jevSource:low?'Rules':'Jev'});
+    this.later(()=>this.setState(s=>(s.jev&&s.jev.task===task.id?{jev:null}:{})),6000);
+    return {provider:hi,profile,others};
+  }
+
+  tick(){
+    const sp=this.props.simSpeed??1;
+    let fire=false;
+    this.setState(s=>{
+      const st={t:s.t+0.45, syncAgo:((s.syncAgo+0.45)%9)|0};
+      let cycleLeft=s.cycleLeft-0.45*sp;
+      if(cycleLeft<=0){ fire=true; cycleLeft=5+Math.random()*3; st.cycle=s.cycle+1; }
+      st.cycleLeft=cycleLeft;
+      return st;
+    },()=>{ if(fire) this.coordinatorCycle(); });
+    this.advance(sp);
+  }
+
+  coordinatorCycle(){
+    const s=this.state;
+    this._res=this._res||{}; this._resTask=this._resTask||{}; this._cl=this._cl||{};
+    let readyList=s.tasks.filter(t=>t.stage==='READY');
+    const back=s.tasks.filter(t=>t.stage==='BACKLOG');
+    if(back.length && readyList.length<5){
+      const b=back[0];
+      this.setState(p=>({tasks:p.tasks.map(x=>x.id===b.id?Object.assign({},x,{stage:'READY'}):x)}));
+      this.log('TASK_READY','#'+b.id,b.title+' entered ready queue');
+      readyList=readyList.concat([b]);
+    }
+    const free=[]; s.impl.forEach((c,i)=>{ if(!c && !this._res[i]) free.push(i); });
+    const queue=readyList.filter(t=>!this._resTask[t.id]);
+    if(!queue.length||!free.length){
+      this.setState({coordActivity:queue.length?'Capacity full · '+queue.length+' READY held':'Monitoring '+s.tasks.filter(t=>t.stage!=='DONE').length+' open tasks'});
+      return;
+    }
+    const n=Math.min(free.length,queue.length);
+    for(let k=0;k<n;k++){
+      const task=queue[k], slot=free[k];
+      this._res[slot]=true; this._resTask[task.id]=true;
+      this.later(()=>{
+        const d=this.route(task);
+        this.setState({coordActivity:'Routing #'+task.id+' → '+PROVIDERS[d.provider].label+' / '+d.profile});
+        this.later(()=>this.dispatch(task.id,slot,d),800);
+      },k*1300);
+    }
+  }
+
+  dispatch(taskId,slot,d){
+    const task=this.state.tasks.find(t=>t.id===taskId);
+    if(!task||this.state.impl[slot]){ this._res[slot]=false; delete this._resTask[taskId]; return; }
+    const agentId=PROVIDERS[d.provider].pre+'-0'+(slot+1);
+    this.pulse('impl'+slot,BLUE);
+    this.later(()=>this.fly('ready','impl'+slot,'#'+task.id,BLUE),260);
+    const akey='a'+(this._ak=(this._ak||0)+1);
+    this.later(()=>{
+      this._res[slot]=false; delete this._resTask[taskId];
+      this.setState(s=>{
+        const impl=s.impl.slice();
+        impl[slot]={agentId,akey,provider:d.provider,profile:d.profile,taskId,op:'Reading',runtime:0,prog:0,state:'IMPLEMENTING',branch:'ai/issue-'+task.id};
+        return {impl,tasks:s.tasks.map(t=>t.id===taskId?Object.assign({},t,{stage:'IN_PROGRESS',agent:agentId}):t),
+          agents:s.agents.concat([{key:akey,id:agentId,role:'implementer',provider:PROVIDERS[d.provider].label,profile:d.profile,task:'#'+taskId,worktree:'.worktrees/issue-'+taskId,started:Date.now(),state:'working',op:'Reading',result:'—'}])};
+      });
+      this.log('TASK_ASSIGNED','#'+task.id,agentId+' · '+PROVIDERS[d.provider].label+' / '+d.profile);
+      this.log('WORKER_STARTED','#'+task.id,'worktree .worktrees/issue-'+task.id+' created');
+    },1150);
+  }
+
+  advance(sp){
+    const s=this.state; this._cl=this._cl||{};
+    s.impl.forEach((c,i)=>{ if(!c||this._cl['impl'+i]) return;
+      const prog=c.prog+(0.9+Math.random()*1.8)*sp;
+      const op=prog>82?'Committing':prog>58?'Testing':prog>28?'Editing':prog>12?'Analyzing':'Reading';
+      if(prog>=100){ this.finishImpl(i); return; }
+      this.setState(p=>{ const impl=p.impl.slice(); if(!impl[i]) return {};
+        impl[i]=Object.assign({},impl[i],{prog,op,runtime:impl[i].runtime+0.45});
+        return {impl,agents:p.agents.map(a=>a.key===impl[i].akey?Object.assign({},a,{op}):a)};
+      });
+    });
+    s.review.forEach((c,i)=>{ if(!c||this._cl['rev'+i]) return;
+      const prog=c.prog+(1.4+Math.random()*2.2)*sp;
+      if(prog>=100){ this.finishReview(i); return; }
+      this.setState(p=>{ const review=p.review.slice(); if(!review[i]) return {}; review[i]=Object.assign({},review[i],{prog,runtime:review[i].runtime+0.45}); return {review}; });
+    });
+    if(s.sec&&!this._cl.sec){ const prog=s.sec.prog+(1.6+Math.random()*2.4)*sp;
+      if(prog>=100) this.finishSec(); else this.setState(p=>({sec:p.sec?Object.assign({},p.sec,{prog}):null})); }
+    if(s.ci&&!this._cl.ci){ const prog=s.ci.prog+(1.5+Math.random()*2.1)*sp;
+      if(prog>=100) this.finishCi(); else this.setState(p=>({ci:p.ci?Object.assign({},p.ci,{prog}):null})); }
+    if(s.merge && s.merge.state==='MERGING' && !this._cl.merge){ const prog=s.merge.prog+3.2*sp;
+      if(prog>=100) this.finishMerge(); else this.setState(p=>({merge:p.merge?Object.assign({},p.merge,{prog}):null})); }
+  }
+
+  finishImpl(i){
+    const c=this.state.impl[i]; if(!c||this._cl['impl'+i]) return;
+    const task=this.state.tasks.find(t=>t.id===c.taskId);
+    const pr=80+((c.taskId*7)%40);
+    if(!c.handedOff){
+      this.log('WORKER_FINISHED','#'+c.taskId,'implementation committed on '+c.branch);
+      this.log('PR_CREATED','#'+c.taskId,'PR #'+pr+' opened → main');
+      this.setState(p=>{ const impl=p.impl.slice(); if(!impl[i]) return {}; impl[i]=Object.assign({},impl[i],{handedOff:true,state:'WAITING',op:'Waiting'}); return {impl}; });
+    }
+    this._tgt=this._tgt||{};
+    let slot=-1;
+    for(let k=0;k<this.state.review.length;k++){ if(!this.state.review[k]&&!this._tgt['rev'+k]){ slot=k; break; } }
+    if(slot<0) return;
+    this._tgt['rev'+slot]=true;
+    this._cl['impl'+i]=true;
+    this.fly('impl'+i,'rev'+slot,'PR #'+pr,GREEN);
+    const rkey='a'+(this._ak=(this._ak||0)+1);
+    this.later(()=>{
+      this._cl['impl'+i]=false; this._tgt['rev'+slot]=false;
+      const revProvider=c.provider==='codex'?'claude':'codex';
+      const agentId='REV-0'+(slot+1);
+      this.setState(p=>{
+        const impl=p.impl.slice(); impl[i]=null;
+        const review=p.review.slice();
+        review[slot]={agentId,akey:rkey,provider:PROVIDERS[revProvider].label,taskId:c.taskId,pr,prog:0,runtime:0,
+          findings:{crit:0,high:Math.random()<0.18?1:0,med:Math.floor(Math.random()*3),low:Math.floor(Math.random()*3)},ac:[0,6]};
+        return {impl,review,
+          tasks:p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:'REVIEWING',pr}):t),
+          agents:p.agents.map(a=>a.key===c.akey?Object.assign({},a,{state:'done',result:'PR #'+pr,op:'—'}):a)
+            .concat([{key:rkey,id:agentId,role:'reviewer',provider:PROVIDERS[revProvider].label,profile:'strong',task:'#'+c.taskId,worktree:'ai/issue-'+c.taskId,started:Date.now(),state:'working',op:'Reviewing',result:'—'}])};
+      });
+      this.log('REVIEW_STARTED','#'+c.taskId,'REV-0'+(slot+1)+' · '+PROVIDERS[revProvider].label+' cross-provider review');
+    },1000);
+  }
+
+  finishReview(i){
+    const c=this.state.review[i]; if(!c||this._cl['rev'+i]) return;
+    const task=this.state.tasks.find(t=>t.id===c.taskId);
+    const reject=c.findings.high>0;
+    if(reject){
+      this._cl['rev'+i]=true;
+      this.log('REVIEW_REJECTED','#'+c.taskId,'changes requested · 1 high finding');
+      const free=this.state.impl.indexOf(null);
+      this.fly('rev'+i,free>=0?'impl'+free:'ready','#'+c.taskId,AMBER);
+      this.later(()=>{
+        this._cl['rev'+i]=false;
+        this.setState(p=>{ const review=p.review.slice(); review[i]=null;
+          return {review,tasks:p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:'READY',prog:0,agent:null}):t),
+            agents:p.agents.map(a=>a.key===c.akey?Object.assign({},a,{state:'done',result:'CHANGES_REQUESTED',op:'—'}):a)};
+        });
+        this.log('TASK_READY','#'+c.taskId,'returned to implementation queue');
+      },1000);
+      return;
+    }
+    if(!c.approved){
+      this.log('REVIEW_APPROVED','#'+c.taskId,'6/6 acceptance criteria met');
+      this.setState(p=>{ const review=p.review.slice(); if(!review[i]) return {}; review[i]=Object.assign({},review[i],{approved:true}); return {review}; });
+    }
+    this._tgt=this._tgt||{};
+    const needsSec=task&&task.sec&&!this.state.sec&&!this._tgt.sec;
+    if(!needsSec&&(this.state.ci||this._tgt.ci)) return;
+    const target=needsSec?'sec':'ci';
+    this._tgt[target]=true;
+    this._cl['rev'+i]=true;
+    this.fly('rev'+i,target,'#'+c.taskId,GREEN);
+    this.later(()=>{
+      this._cl['rev'+i]=false; this._tgt[target]=false;
+      this.setState(p=>{ const review=p.review.slice(); review[i]=null;
+        const up={review,agents:p.agents.map(a=>a.key===c.akey?Object.assign({},a,{state:'done',result:'APPROVED',op:'—'}):a)};
+        if(needsSec) up.sec={taskId:c.taskId,pr:c.pr,prog:0};
+        else up.ci={taskId:c.taskId,pr:c.pr,prog:0,id:'CI-'+(40+(c.taskId%20))};
+        up.tasks=p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:needsSec?'SECURITY':'VERIFIED'}):t);
+        return up;
+      });
+      this.log(needsSec?'REVIEW_STARTED':'CI_STARTED','#'+c.taskId,needsSec?'SEC-01 security inspection started':'pipeline queued');
+    },1000);
+  }
+
+  finishSec(){
+    const c=this.state.sec; if(!c||this._cl.sec) return;
+    if(!c.cleared){
+      this.log('REVIEW_APPROVED','#'+c.taskId,'security check · 0 blocking findings');
+      this.setState(p=>({sec:p.sec?Object.assign({},p.sec,{cleared:true}):null}));
+    }
+    this._tgt=this._tgt||{};
+    if(this.state.ci||this._tgt.ci) return;
+    this._tgt.ci=true; this._cl.sec=true;
+    this.fly('sec','ci','#'+c.taskId,GREEN);
+    this.later(()=>{
+      this._cl.sec=false; this._tgt.ci=false;
+      this.setState(p=>({sec:null,ci:{taskId:c.taskId,pr:c.pr,prog:0,id:'CI-'+(40+(c.taskId%20))},
+        tasks:p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:'VERIFIED'}):t)}));
+      this.log('CI_STARTED','#'+c.taskId,'unit · integration · typecheck · lint · build');
+    },1000);
+  }
+
+  finishCi(){
+    const c=this.state.ci; if(!c||this._cl.ci) return;
+    if(Math.random()<0.1){
+      this._cl.ci=true;
+      this.log('CI_FAILED','#'+c.taskId,'integration suite failed · retry queued');
+      this.later(()=>{
+        this._cl.ci=false;
+        this.setState(p=>({ci:null,tasks:p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:'READY',prog:0}):t)}));
+        this.log('RETRY_STARTED','#'+c.taskId,'returned to ready queue');
+      },1400);
+      return;
+    }
+    this._tgt=this._tgt||{};
+    if(this.state.merge||this._tgt.merge) return;
+    this._tgt.merge=true; this._cl.ci=true;
+    this.log('CI_PASSED','#'+c.taskId,'quality gate satisfied');
+    this.fly('ci','merge','PR #'+c.pr,GREEN);
+    this.later(()=>{
+      this._cl.ci=false; this._tgt.merge=false;
+      this.setState(p=>({ci:null,merge:{taskId:c.taskId,pr:c.pr,prog:0,state:'MERGE_READY'},
+        tasks:p.tasks.map(t=>t.id===c.taskId?Object.assign({},t,{stage:'MERGE_READY'}):t)}));
+      this.later(()=>{
+        this.setState(p=>(p.merge&&p.merge.taskId===c.taskId?{merge:Object.assign({},p.merge,{state:'MERGING'}),branchMerging:c.taskId}:{}));
+        this.log('MERGE_STARTED','#'+c.taskId,'squash merge into main');
+      },1200);
+    },1000);
+  }
+
+  finishMerge(){
+    const m=this.state.merge; if(!m||this._cl.merge) return;
+    this._cl.merge=true;
+    const task=this.state.tasks.find(t=>t.id===m.taskId);
+    this.log('MERGED','#'+m.taskId,'PR #'+m.pr+' merged into main');
+    this.fly('merge','done','#'+m.taskId,GREEN);
+    this.later(()=>{
+      this._cl.merge=false;
+      const unblocked=this.state.tasks.filter(t=>t.stage==='BLOCKED'&&t.blockedBy===m.taskId);
+      this.setState(p=>({merge:null,branchMerging:null,mergedToday:p.mergedToday+1,
+        done:[{id:m.taskId,title:task?task.title:'',at:clock(p.t%3600)}].concat(p.done).slice(0,7),
+        tasks:p.tasks.map(t=>t.id===m.taskId?Object.assign({},t,{stage:'DONE'}):(t.blockedBy===m.taskId&&t.stage==='BLOCKED'?Object.assign({},t,{stage:'UNLOCKING'}):t))}));
+      this.log('TASK_COMPLETED','#'+m.taskId,'issue closed');
+      unblocked.forEach(u=>{
+        this.log('TASK_UNBLOCKED','#'+u.id,'dependency on #'+m.taskId+' resolved');
+        this.later(()=>{
+          this.fly('ready','ready','#'+u.id,GREEN);
+          this.setState(p=>({tasks:p.tasks.map(t=>t.id===u.id?Object.assign({},t,{stage:'READY'}):t)}));
+        },1100);
+      });
+      if(!this.state.humanTask && Math.random()<0.34){
+        const cand=this.state.tasks.find(t=>t.stage==='BACKLOG'&&t.area==='Platform');
+        if(cand){ this.setState(p=>({humanTask:cand.id,tasks:p.tasks.map(t=>t.id===cand.id?Object.assign({},t,{stage:'WAITING_HUMAN'}):t)}));
+          this.log('WAITING_HUMAN','#'+cand.id,'public API compatibility decision required'); }
+      }
+    },1000);
+  }
+
+  renderVals(){
+    const s=this.state, P=this.props;
+    const showJev=P.showJev??true;
+    const tab=on=>({fontFamily:MONO,fontSize:'11px',padding:'6px 14px',borderRadius:'4px',border:0,cursor:'pointer',letterSpacing:'0.04em',
+      background:on?'rgba(255,255,255,0.10)':'transparent',color:on?'oklch(0.95 0.005 250)':DIM});
+    const chip=(c,bg)=>({fontFamily:MONO,fontSize:'9px',letterSpacing:'0.1em',padding:'2px 6px',borderRadius:'3px',color:c,background:bg||'rgba(255,255,255,0.05)'});
+
+    const ready=s.tasks.filter(t=>t.stage==='READY');
+    const blocked=s.tasks.filter(t=>t.stage==='BLOCKED'||t.stage==='UNLOCKING');
+    const human=s.tasks.find(t=>t.id===s.humanTask);
+
+    const implSlots=s.impl.map((c,i)=>{
+      const task=c?s.tasks.find(t=>t.id===c.taskId):null;
+      const live=!!c;
+      return {slotId:'impl'+i,
+        cardCss:{border:'1px solid '+(live?'rgba(120,160,255,0.28)':'rgba(255,255,255,0.07)'),borderRadius:'8px',
+          background:live?'linear-gradient(180deg, rgba(120,160,255,0.055), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)',
+          padding:'11px 12px',transition:'border-color 400ms, background 400ms',boxShadow:live?'0 0 0 1px rgba(120,160,255,0.06), 0 8px 24px -18px rgba(120,160,255,0.6)':'none'},
+        dotCss:{width:'7px',height:'7px',borderRadius:'2px',background:live?BLUE:'rgba(255,255,255,0.18)',animation:live&&!P.reducedMotion?'bp 1.8s ease-in-out infinite':'none'},
+        agentId:c?c.agentId:'CELL '+(i+1),
+        stateLabel:c?(c.state==='WAITING'?'WAITING':c.op.toUpperCase()):'IDLE',
+        stateCss:chip(c?(c.state==='WAITING'?AMBER:BLUE):DIM,c?'rgba(120,160,255,0.10)':'rgba(255,255,255,0.04)'),
+        providerLine:c?PROVIDERS[c.provider].label+' · '+c.profile:'awaiting dispatch',
+        taskRef:task?'Issue #'+task.id:'',
+        taskTitle:task?task.title:'—',
+        branch:c?c.branch:'',
+        runtime:c?clock(c.runtime):'',
+        wave:Array.from({length:18},(_,k)=>({css:{flex:1,height:'100%',borderRadius:'1px',transformOrigin:'bottom',
+          background:live?'linear-gradient(180deg, '+BLUE+', rgba(120,160,255,0.25))':'rgba(255,255,255,0.05)',
+          opacity:live?0.85:0.5,
+          animation:live&&!P.reducedMotion?'wv '+(0.7+((k*37)%9)*0.11).toFixed(2)+'s ease-in-out infinite':'none',
+          animationDelay:(-(k*0.13)).toFixed(2)+'s',
+          transform:live?'none':'scaleY(0.14)'}}))
+      };
+    });
+
+    const reviewSlots=s.review.map((c,i)=>{
+      const task=c?s.tasks.find(t=>t.id===c.taskId):null;
+      const live=!!c, f=c?c.findings:null;
+      const done=c&&c.prog>78;
+      return {slotId:'rev'+i,
+        cardCss:{border:'1px solid '+(live?'rgba(120,255,200,0.22)':'rgba(255,255,255,0.07)'),borderRadius:'8px',
+          background:live?'linear-gradient(180deg, rgba(100,230,190,0.05), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)',
+          padding:'11px 12px',transition:'border-color 400ms, background 400ms'},
+        agentId:c?c.agentId:'REV-0'+(i+1),
+        stateLabel:live?'INSPECTING':'IDLE',
+        stateCss:chip(live?GREEN:DIM,live?'rgba(100,230,190,0.10)':'rgba(255,255,255,0.04)'),
+        providerLine:live?c.provider+' · cross-provider':'quality control',
+        taskRef:live?'PR #'+c.pr+' · #'+c.taskId:'',
+        taskTitle:task?task.title:'—',
+        findings:live?[
+          {k:'AC',v:Math.min(6,Math.round(c.prog/100*6))+'/6',css:{color:GREEN}},
+          {k:'CRITICAL',v:String(f.crit),css:{color:f.crit?RED:'oklch(0.7 0.01 250)'}},
+          {k:'HIGH',v:String(f.high),css:{color:f.high?AMBER:'oklch(0.7 0.01 250)'}},
+          {k:'MEDIUM',v:String(f.med),css:{color:'oklch(0.7 0.01 250)'}}
+        ]:[{k:'AC',v:'—',css:{color:DIM}},{k:'CRITICAL',v:'—',css:{color:DIM}},{k:'HIGH',v:'—',css:{color:DIM}},{k:'MEDIUM',v:'—',css:{color:DIM}}],
+        verdict:done?(f.high?'CHANGES REQUESTED':'APPROVE'):(live?'scanning…':''),
+        verdictCss:{marginTop:'10px',fontFamily:MONO,fontSize:'10px',letterSpacing:'0.12em',textAlign:'center',padding:'5px',borderRadius:'4px',
+          color:done?(f.high?AMBER:GREEN):DIM,
+          background:done?(f.high?'rgba(240,180,90,0.12)':'rgba(100,230,190,0.12)'):'transparent',
+          opacity:live?1:0,transition:'all 300ms'}
+      };
+    });
+
+    const secLive=!!s.sec;
+    const secOrder=['Auth','Secrets','Injection','Data'];
+    const secChecks=secOrder.map((k,i)=>{
+      const on=secLive&&s.sec.prog>(i+1)*22;
+      return {k,v:secLive?(on?'✓':'···'):'—',css:{color:on?GREEN:(secLive?AMBER:DIM)}};
+    });
+
+    const ciLive=!!s.ci;
+    const ciOrder=['Unit','Integration','Type Check','Lint','Build'];
+    const ciChecks=ciOrder.map((k,i)=>{
+      const on=ciLive&&s.ci.prog>(i+1)*18;
+      const running=ciLive&&!on&&s.ci.prog>i*18;
+      return {k,v:ciLive?(on?'✓':(running?'running…':'queued')):'—',css:{color:on?GREEN:(running?BLUE:DIM)}};
+    });
+
+    const m=s.merge;
+    const mergeTask=m?s.tasks.find(t=>t.id===m.taskId):null;
+
+    const jevRows=(showJev&&s.jev)?s.jev.rows.map(r=>({group:r.group,choice:r.choice,score:r.score.toFixed(2),
+      barCss:{height:'100%',width:Math.round(r.score*100)+'%',background:s.jev.low?AMBER:BLUE,borderRadius:'3px',transition:'width 700ms cubic-bezier(.2,.8,.2,1)'}})):
+      [{group:'PROVIDER',choice:'—',score:'—',barCss:{height:'100%',width:'0%',background:BLUE}},
+       {group:'MODEL',choice:'—',score:'—',barCss:{height:'100%',width:'0%',background:BLUE}},
+       {group:'REVIEW',choice:'—',score:'—',barCss:{height:'100%',width:'0%',background:BLUE}}];
+
+    const phaseDefs=[[1,'Phase 1 — Foundation'],[2,'Phase 2 — Core Product'],[3,'Phase 3 — Integrations'],[4,'Phase 4 — Hardening']];
+    const phases=phaseDefs.map(([n,name])=>{
+      const all=s.tasks.filter(t=>t.phase===n), d=all.filter(t=>t.stage==='DONE').length;
+      const pct=all.length?Math.round(d/all.length*100):0;
+      return {name,pct:pct+'%',barCss:{height:'100%',width:pct+'%',background:pct===100?GREEN:BLUE,borderRadius:'2px',transition:'width 900ms ease'}};
+    });
+
+    const worktrees=s.impl.filter(Boolean);
+    const branchPaths=worktrees.map((c,i)=>{
+      const y=24+i*28, merging=s.branchMerging===c.taskId;
+      return React.createElement(React.Fragment,{key:c.taskId},
+        React.createElement('path',{d:'M14 '+y+' H210 C258 '+y+' 258 138 300 138',fill:'none',stroke:merging?GREEN:'rgba(120,160,255,0.42)',strokeWidth:merging?2:1.2,
+          strokeDasharray:'340',strokeDashoffset:merging?0:0,style:{transition:'stroke 500ms'}}),
+        React.createElement('circle',{cx:14,cy:y,r:3,fill:merging?GREEN:BLUE}),
+        React.createElement('text',{x:20,y:y-6,fill:'rgba(230,235,245,0.62)',style:{fontFamily:MONO,fontSize:'9px'}},'ai/issue-'+c.taskId)
+      );
+    }).concat(m&&m.state==='MERGING'?[React.createElement('circle',{key:'mv',cx:300,cy:138,r:5,fill:'none',stroke:GREEN,strokeWidth:1.5,style:{transformOrigin:'300px 138px',animation:P.reducedMotion?'none':'ring 1.2s ease-out infinite'}})]:[]);
+
+    const kindColor=k=>/FAIL|REJECT/.test(k)?RED:/HUMAN|RETRY|UNAVAIL/.test(k)?AMBER:/MERGE|PASS|APPROV|COMPLET|UNBLOCK/.test(k)?GREEN:BLUE;
+    const rail=React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'2px'}},
+      s.events.slice(0,11).map(e=>React.createElement('div',{key:e.id,
+        style:{display:'grid',gridTemplateColumns:'64px 8px 150px 1fr',gap:'9px',alignItems:'center',fontFamily:MONO,fontSize:'10.5px',padding:'2px 0',
+          animation:P.reducedMotion?'none':'fin 380ms ease-out'}},
+        React.createElement('span',{style:{color:'oklch(0.5 0.008 250)'}},e.time),
+        React.createElement('span',{style:{width:'5px',height:'5px',borderRadius:'50%',background:kindColor(e.kind)}}),
+        React.createElement('span',{style:{color:kindColor(e.kind),letterSpacing:'0.04em'}},e.kind),
+        React.createElement('span',{style:{color:'oklch(0.74 0.008 250)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},(e.issue!=='—'?e.issue+' · ':'')+e.detail)
+      ))
+    );
+
+    const overlay=React.createElement(React.Fragment,null,
+      s.pulses.map(p=>React.createElement('div',{key:p.key,
+        style:{position:'absolute',left:0,top:0,width:'8px',height:'8px',marginLeft:'-4px',marginTop:'-4px',borderRadius:'50%',
+          background:p.color,boxShadow:'0 0 12px '+p.color,
+          transform:'translate3d('+(p.on?p.x1:p.x0)+'px,'+(p.on?p.y1:p.y0)+'px,0)',
+          transition:'transform 800ms cubic-bezier(.4,0,.2,1), opacity 300ms',opacity:p.on?0.15:1}})),
+      s.flyers.map(f=>React.createElement('div',{key:f.key,
+        style:{position:'absolute',left:0,top:0,
+          transform:'translate3d('+(f.on?f.x1:f.x0)+'px,'+(f.on?f.y1:f.y0)+'px,0) translate(-50%,-50%)',
+          transition:'transform 950ms cubic-bezier(.62,.02,.24,1), opacity 250ms',opacity:f.on?1:0.75}},
+        React.createElement('div',{style:{fontFamily:MONO,fontSize:'10.5px',fontWeight:600,color:'#0b0d11',background:f.color,
+          padding:'4px 9px',borderRadius:'4px',whiteSpace:'nowrap',boxShadow:'0 0 20px -4px '+f.color}},f.label)))
+    );
+
+    const roster=s.agents.slice().reverse().slice(0,12).map(a=>{
+      const live=a.state==='working';
+      return {id:a.id,role:a.role,provider:a.provider,profile:a.profile,task:a.task,worktree:a.worktree,
+        runtime:clock((Date.now()-a.started)/1000),
+        op:live?a.op:'—',result:a.result,state:live?'ACTIVE':'RETIRED',
+        cardCss:{border:'1px solid '+(live?'rgba(120,160,255,0.26)':'rgba(255,255,255,0.07)'),borderRadius:'8px',padding:'13px 14px',
+          background:live?'linear-gradient(180deg, rgba(120,160,255,0.05), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)'},
+        dotCss:{width:'7px',height:'7px',borderRadius:'2px',background:live?BLUE:'rgba(255,255,255,0.18)',animation:live&&!P.reducedMotion?'bp 1.8s ease-in-out infinite':'none'},
+        stateCss:chip(live?BLUE:DIM,live?'rgba(120,160,255,0.10)':'rgba(255,255,255,0.04)'),
+        opCss:{color:live?GREEN:DIM},
+        resultCss:{color:/APPROVED|PR/.test(a.result)?GREEN:/CHANGES/.test(a.result)?AMBER:DIM}};
+    });
+
+    const filterDefs=['ALL','ASSIGN','REVIEW','CI','MERGE','HUMAN'];
+    const filters=filterDefs.map(f=>({label:f,onClick:()=>this.setState({filter:f}),
+      css:{fontFamily:MONO,fontSize:'10px',letterSpacing:'0.08em',padding:'5px 11px',borderRadius:'4px',cursor:'pointer',
+        border:'1px solid '+(s.filter===f?'rgba(120,160,255,0.4)':'rgba(255,255,255,0.09)'),
+        background:s.filter===f?'rgba(120,160,255,0.12)':'transparent',color:s.filter===f?'oklch(0.9 0.02 250)':DIM}}));
+    const fmatch=e=>s.filter==='ALL'||(s.filter==='ASSIGN'&&/ASSIGNED|READY|WORKER/.test(e.kind))||(s.filter==='REVIEW'&&/REVIEW/.test(e.kind))
+      ||(s.filter==='CI'&&/CI_/.test(e.kind))||(s.filter==='MERGE'&&/MERGE|PR_|COMPLETED|UNBLOCK/.test(e.kind))||(s.filter==='HUMAN'&&/HUMAN/.test(e.kind));
+    const eventLog=s.events.filter(fmatch).map(e=>({time:e.time,kind:e.kind,issue:e.issue,detail:e.detail,
+      kindCss:{color:kindColor(e.kind),letterSpacing:'0.04em'}}));
+
+    const hudDefs=[
+      ['WORKERS',s.impl.filter(Boolean).length+' / 4',BLUE],
+      ['REVIEWERS',s.review.filter(Boolean).length+' / 2',BLUE],
+      ['READY',String(ready.length),GREEN],
+      ['BLOCKED',String(blocked.length),blocked.length?AMBER:DIM],
+      ['CI',s.ci?'1':'0',s.ci?BLUE:DIM],
+      ['MERGED',String(s.mergedToday),GREEN],
+      ['HUMAN',human?'1':'0',human?AMBER:DIM]
+    ];
+
+    return {
+      isFactory:s.view==='factory', isAgents:s.view==='agents', isEvents:s.view==='events',
+      goFactory:()=>this.setState({view:'factory'}), goAgents:()=>this.setState({view:'agents'}), goEvents:()=>this.setState({view:'events'}),
+      tabFactory:tab(s.view==='factory'), tabAgents:tab(s.view==='agents'), tabEvents:tab(s.view==='events'),
+      stageRef:this.stageRef,
+      hud:hudDefs.map(([label,value,c])=>({label,value,valCss:{color:c,fontSize:'13px',fontWeight:500}})),
+      syncAgo:(s.syncAgo|0)+'s ago',
+      cycle:s.cycle, coordActivity:s.coordActivity, nextCycle:'00:'+pad(Math.max(0,Math.ceil(s.cycleLeft))),
+      engineLabel:showJev?'Jev enabled':'Rules only',
+      cycleBarCss:{height:'100%',width:Math.max(0,Math.min(100,(1-s.cycleLeft/8)*100))+'%',background:BLUE,borderRadius:'2px',transition:'width 450ms linear'},
+      towerRingCss:{position:'absolute',inset:0,borderRadius:'50%',border:'1px solid '+BLUE,opacity:0.5,
+        animation:P.reducedMotion?'none':'ring 2.6s ease-out infinite'},
+      jevSource:showJev?s.jevSource:'Rules',
+      jevBadgeCss:chip(s.jev&&s.jev.low?AMBER:GREEN,s.jev&&s.jev.low?'rgba(240,180,90,0.12)':'rgba(100,230,190,0.10)'),
+      jevHeadline:s.jev?(s.jev.low?'Jev confidence '+s.jev.conf.toFixed(2)+' · rules fallback for #'+s.jev.task:'Task #'+s.jev.task+' · confidence '+s.jev.conf.toFixed(2)):'Idle · awaiting next routing decision',
+      jevRows,
+      phases,
+      humanGate:!!human, humanGateId:human?human.id:'', humanGateTitle:human?human.title:'',
+      resolveHuman:()=>{ if(!human) return; this.setState(p=>({humanTask:null,tasks:p.tasks.map(t=>t.id===human.id?Object.assign({},t,{stage:'READY'}):t)})); this.log('TASK_READY','#'+human.id,'human decision recorded · unblocked'); },
+      readyCount:String(ready.length), busyImpl:String(s.impl.filter(Boolean).length),
+      readyTasks:ready.slice(0,6).map(t=>({id:t.id,title:t.title,prio:t.prio,
+        prioCss:chip(t.prio==='HIGH'?AMBER:t.prio==='MED'?'oklch(0.72 0.01 250)':DIM)})),
+      blockedTasks:blocked.map(b=>({id:b.id,title:b.title,area:b.area,blockedBy:b.blockedBy,
+        wrapCss:{border:'1px dashed rgba(255,255,255,0.14)',borderRadius:'5px',padding:'7px 9px',
+          opacity:b.stage==='UNLOCKING'?0.25:1,transform:b.stage==='UNLOCKING'?'translateX(14px)':'none',transition:'opacity 900ms ease, transform 900ms ease'},
+        depCss:{display:'flex',alignItems:'center',gap:'6px',marginTop:'5px',fontFamily:MONO,fontSize:'9.5px',
+          color:b.stage==='UNLOCKING'?GREEN:AMBER,opacity:b.stage==='UNLOCKING'?0:0.9,transition:'opacity 700ms ease'}})),
+      implSlots, reviewSlots,
+      secCardCss:{border:'1px solid '+(secLive?'rgba(240,180,90,0.28)':'rgba(255,255,255,0.07)'),borderRadius:'8px',padding:'11px 12px',
+        background:secLive?'linear-gradient(180deg, rgba(240,180,90,0.05), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)',transition:'all 400ms'},
+      secStateLabel:secLive?'INSPECTING':'IDLE', secStateCss:chip(secLive?AMBER:DIM,secLive?'rgba(240,180,90,0.12)':'rgba(255,255,255,0.04)'),
+      secTaskRef:secLive?'Issue #'+s.sec.taskId:'—', secChecks,
+      secSummary:secLive?(s.sec.prog>90?'0 blocking findings':'scanning surface…'):'no security-gated task',
+      ciCardCss:{border:'1px solid '+(ciLive?'rgba(120,160,255,0.28)':'rgba(255,255,255,0.07)'),borderRadius:'8px',padding:'11px 12px',
+        background:ciLive?'linear-gradient(180deg, rgba(120,160,255,0.05), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)',transition:'all 400ms'},
+      ciId:ciLive?s.ci.id:'CI', ciStateLabel:ciLive?'RUNNING':'IDLE',
+      ciStateCss:chip(ciLive?BLUE:DIM,ciLive?'rgba(120,160,255,0.10)':'rgba(255,255,255,0.04)'),
+      ciTaskRef:ciLive?'PR #'+s.ci.pr+' · #'+s.ci.taskId:'—',
+      ciScanCss:{position:'absolute',top:0,left:0,height:'100%',width:'26%',borderRadius:'2px',
+        background:'linear-gradient(90deg, transparent, '+BLUE+', transparent)',
+        animation:ciLive&&!P.reducedMotion?'scan 1.5s linear infinite':'none',opacity:ciLive?1:0},
+      ciChecks,
+      ciGate:ciLive&&s.ci.prog>92?'QUALITY GATE ✓':'',
+      ciGateCss:{marginTop:'10px',textAlign:'center',fontFamily:MONO,fontSize:'10px',letterSpacing:'0.12em',padding:'5px',borderRadius:'4px',
+        color:GREEN,background:'rgba(100,230,190,0.12)',opacity:ciLive&&s.ci.prog>92?1:0,transition:'opacity 300ms'},
+      mergeCardCss:{border:'1px solid '+(m?'rgba(100,230,190,0.3)':'rgba(255,255,255,0.07)'),borderRadius:'8px',padding:'11px 12px',
+        background:m?'linear-gradient(180deg, rgba(100,230,190,0.06), rgba(255,255,255,0.012))':'rgba(255,255,255,0.012)',transition:'all 400ms'},
+      mergeStateLabel:m?m.state:'IDLE', mergeStateCss:chip(m?GREEN:DIM,m?'rgba(100,230,190,0.12)':'rgba(255,255,255,0.04)'),
+      mergePr:m?'PR #'+m.pr:'—', mergeTitle:mergeTask?mergeTask.title:'awaiting verified work',
+      mergeGates:[
+        {k:'review',v:m?'✓':'—',css:{color:m?GREEN:DIM}},
+        {k:'ci',v:m?'✓':'—',css:{color:m?GREEN:DIM}},
+        {k:'conflicts',v:m?'none':'—',css:{color:m?GREEN:DIM}}
+      ],
+      mergedToday:String(s.mergedToday),
+      doneTasks:s.done.map(d=>({id:d.id,title:d.title,at:d.at,
+        css:{border:'1px solid rgba(100,230,190,0.16)',borderRadius:'5px',background:'rgba(100,230,190,0.045)',padding:'6px 8px',animation:P.reducedMotion?'none':'fin 420ms ease-out'}})),
+      worktreeCount:String(worktrees.length),
+      branchPaths, rail, overlay,
+      eventCount:String(s.events.length),
+      roster, filters, eventLog
+    };
+  }
+}
+
+</script>
+</body>
+</html>
