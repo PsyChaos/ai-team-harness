@@ -16,6 +16,34 @@ SPEC.loader.exec_module(BROKER)
 
 
 class HandoffRecoveryTests(unittest.TestCase):
+    def test_host_attestation_is_head_bound_and_cannot_satisfy_browser_gate(self):
+        head = "a" * 40
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HARNESS_ROOT": tmp, "HARNESS_REPO": "acme/widget"}), \
+             mock.patch.object(BROKER, "broker_key", return_value=b"test-key"), \
+             mock.patch.object(BROKER, "unit_active", return_value=False), \
+             mock.patch.object(BROKER, "canonical_branch", return_value="ai/issue-7-test"), \
+             mock.patch.object(BROKER, "sanitize_clone_metadata", return_value={}), \
+             mock.patch.object(BROKER, "safe_clone_git", return_value=head), \
+             mock.patch.object(BROKER, "validate_implementation"), \
+             mock.patch.object(BROKER, "parse_implementation_result") as result:
+            report = Path(tmp) / "host.md"
+            report.write_text(f"Decision: PASS\nExact HEAD: {head}\nReal host CLI discovery passed\n")
+            BROKER.register_external_validation(7, {}, report, kind="host")
+            self.assertIn(head, BROKER.external_validation_report(7, head, kind="host"))
+            self.assertEqual(BROKER.external_validation_report(7, head), "")
+            self.assertEqual(BROKER.external_validation_report(7, "b" * 40, kind="host"), "")
+            result.return_value = {"commit": head, "pending_validation": ["- [ ] [external:host] CLI discovery"]}
+            BROKER.require_pending_validation(7, head, [])
+            result.return_value["pending_validation"] = ["- [ ] [external:browser] UI flow"]
+            with self.assertRaisesRegex(BROKER.BrokerError, "browser validation"):
+                BROKER.require_pending_validation(7, head, [])
+            result.return_value = {"commit": "b" * 40, "pending_validation": []}
+            with self.assertRaisesRegex(BROKER.BrokerError, "host validation"):
+                BROKER.require_pending_validation(7, "b" * 40, [])
+            path = BROKER.managed_paths(7)[3] / "issue-7-host-validation.md"
+            path.write_text(path.read_text().replace("Real host", "Forged host"))
+            self.assertEqual(BROKER.external_validation_report(7, head, kind="host"), "")
+
     def test_review_preamble_is_bounded_unambiguous_and_retains_raw_digest(self):
         import hashlib
         report = ("<!-- ai-harness-review:v1 -->\n\n# Review Result\n\n## Decision\nAPPROVE\n\n"
@@ -336,6 +364,7 @@ class HandoffRecoveryTests(unittest.TestCase):
         cases = [
             ("VALIDATION_PENDING", "- [ ] [external:ci] Hosted CI", True),
             ("VALIDATION_PENDING", "- [ ] [external:browser] Browser evidence", True),
+            ("VALIDATION_PENDING", "- [ ] [external:host] Authenticated CLI discovery", True),
             ("VALIDATION_PENDING", "- [ ] Missing implementation", False),
             ("VALIDATION_PENDING", "- [ ] [external:unknown] Unknown gate", False),
             ("VALIDATION_PENDING", "", False),

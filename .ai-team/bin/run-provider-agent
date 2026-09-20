@@ -82,7 +82,14 @@ If implementation and locally available checks are complete, but hosted CI or
 browser validation cannot run in this sandbox, report VALIDATION_PENDING rather
 than retrying the same unavailable infrastructure or claiming SUCCESS. Keep each
 unverified acceptance bullet unchecked and prefix it exactly with [external:ci]
-or [external:browser], e.g. '- [ ] [external:ci] Hosted CI has not run yet.'
+or [external:browser] or [external:host], e.g. '- [ ] [external:ci] Hosted CI has not run yet.'
+Use [external:host] for checks requiring the real authenticated host; never
+label CLI discovery/authentication as browser validation. Registered exact-HEAD
+host attestations are supplied by the broker, outside your sandbox. Assess their
+reported checks without claiming you personally performed them. If code and
+documentation already honestly describe your local limitations, preserve HEAD
+and emit the corrected handoff; do not create another documentation-only commit
+merely to copy an attestation, which would invalidate its exact-HEAD binding.
 All other acceptance bullets must be completed and evidenced. Incomplete code or
 failed executable local checks still require PARTIAL or FAILED. Pending external
 validation permits publication and review only; it never grants merge approval.

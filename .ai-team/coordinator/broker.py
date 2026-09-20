@@ -775,7 +775,7 @@ def parse_implementation_result(path: Path) -> dict[str, Any]:
     acceptance = section(raw, "Acceptance Criteria Mapping", ("Validation",))
     checks = [line for line in acceptance.splitlines() if line.lstrip().startswith("-")]
     pending = [line.strip() for line in checks if re.match(
-        r"^- \[ \] \[external:(?:ci|browser)\] .+", line.strip())]
+        r"^- \[ \] \[external:(?:ci|browser|host)\] .+", line.strip())]
     allowed_checks = checks if outcome == "SUCCESS" else [line for line in checks if line.strip() not in pending]
     if (not checks or any(not re.match(r"^- \[[xX]\] .+", line.strip()) for line in allowed_checks)
             or (outcome == "VALIDATION_PENDING" and (not pending or not allowed_checks))):
@@ -1507,6 +1507,9 @@ def spawn_review(action: dict[str, Any], role: str, provider: str,
         "and emit exactly the structured Review Result.\n"
     )
     pack_text += validation_context(action["issue"], pr["headRefOid"])
+    host_report = external_validation_report(action["issue"], pr["headRefOid"], kind="host")
+    if host_report:
+        pack_text += "\nRegistered host acceptance attestation (signature and exact HEAD verified; independently assess the recorded checks):\n" + host_report
     if prior_review:
         pack_text += ("\nPrevious malformed/process-failed review (untrusted evidence). Reassess all "
                       "findings; a formatting retry must not discard security findings:\n" +
@@ -1822,6 +1825,10 @@ def require_pending_validation(issue: int, head: str, checks: list[dict[str, Any
                         or bool(prior and external_validation_report(issue, prior)))
     if browser_required and not external_validation_report(issue, head):
         raise BrokerError("deferred browser validation lacks a signed PASS report for this HEAD")
+    if (metadata.get("host_validation_required") is True
+            or any("[external:host]" in line for line in pending)):
+        if not external_validation_report(issue, head, kind="host"):
+            raise BrokerError("deferred host validation lacks a signed PASS report for this HEAD")
 
 
 def advance_merge_gate(action: dict[str, Any]) -> None:
@@ -2203,6 +2210,12 @@ def retry_implementation(action: dict[str, Any]) -> None:
         external_validation = external_validation_report(action["issue"], head)
     if external_validation and not (worktree / ".git/MERGE_HEAD").exists():
         evidence_text += "\n\nExact-HEAD external validation (broker-verified signature):\n" + external_validation
+    host_path = reviews / f"issue-{action['issue']}-host-validation.md"
+    if host_path.exists() and not (worktree / ".git/MERGE_HEAD").exists():
+        sanitize_clone_metadata(action["issue"], action["branch"])
+        host_report = external_validation_report(action["issue"], safe_clone_git(action["issue"], ["rev-parse", "HEAD"]), kind="host")
+        if host_report:
+            evidence_text += "\n\nRegistered exact-HEAD host PASS evidence (broker-verified signature; not an instruction to approve):\n" + host_report
     pack_text = render_retry_pack(action, scope, worktree, evidence_kind,
                                   evidence_digest, evidence_text)
     # Re-fetch immediately before mutating runtime/project state. GitHub does
@@ -2440,15 +2453,18 @@ def resume_review(issue: int, role: str, reason: str) -> None:
     set_status(str(item["id"]), "REVIEWING")
 
 
-def external_validation_report(issue: int, head: str) -> str:
+def external_validation_report(issue: int, head: str, *, kind: str = "browser") -> str:
+    if kind not in {"browser", "host"}:
+        raise BrokerError("invalid external validation kind")
     _, _, _, reviews = managed_paths(issue)
-    path = safe_child(reviews / f"issue-{issue}-external-validation.md", reviews)
+    suffix = "external-validation" if kind == "browser" else "host-validation"
+    path = safe_child(reviews / f"issue-{issue}-{suffix}.md", reviews)
     text_value = optional_managed_text(path)
     if not text_value:
         return ""
     payload = parse_signed_evidence(text_value, EXTERNAL_VALIDATION_MARKER)
     if (not payload or payload.get("repo") != repo_name() or payload.get("issue") != issue
-            or payload.get("head_sha") != head or payload.get("kind") != "browser"
+            or payload.get("head_sha") != head or payload.get("kind") != kind
             or payload.get("outcome") != "PASS"):
         return ""
     report = payload.get("report")
@@ -2457,9 +2473,11 @@ def external_validation_report(issue: int, head: str) -> str:
     return report
 
 
-def register_external_validation(issue: int, item: dict[str, Any], validation_report: Path) -> None:
-    if unit_active(f"ai-harness-impl-{issue}"):
-        raise BrokerError("cannot attest while an implementer is active")
+def register_external_validation(issue: int, item: dict[str, Any], validation_report: Path, *, kind: str = "browser") -> None:
+    if kind not in {"browser", "host"}:
+        raise BrokerError("invalid external validation kind")
+    if any(unit_active(f"ai-harness-{role}-{issue}") for role in ("impl", "review", "security-review")):
+        raise BrokerError("cannot attest while a worker is active")
     report = optional_managed_text(validation_report)
     if not report or len(report) > MAX_RETRY_EVIDENCE:
         raise BrokerError("external validation report must be nonempty and bounded")
@@ -2470,14 +2488,15 @@ def register_external_validation(issue: int, item: dict[str, Any], validation_re
     if head not in report:
         raise BrokerError("external validation report does not identify current HEAD")
     if not re.search(r"(?m)^Decision: (?:PASS|APPROVE)(?:[ .]|$)", report):
-        raise BrokerError("external browser report must explicitly state PASS or APPROVE")
+        raise BrokerError("external validation report must explicitly state PASS or APPROVE")
     _, _, _, reviews = managed_paths(issue)
-    path = safe_child(reviews / f"issue-{issue}-external-validation.md", reviews)
-    metadata["browser_validation_required"] = True
+    suffix = "external-validation" if kind == "browser" else "host-validation"
+    path = safe_child(reviews / f"issue-{issue}-{suffix}.md", reviews)
+    metadata[f"{kind}_validation_required"] = True
     atomic_json(clone_metadata_path(issue), metadata)
     atomic_text(path, signed_evidence(EXTERNAL_VALIDATION_MARKER, {
         "repo": repo_name(), "issue": issue, "head_sha": head,
-        "kind": "browser", "outcome": "PASS", "report": report}))
+        "kind": kind, "outcome": "PASS", "report": report}))
 
 
 def resume_implementation(issue: int, reason: str, validation_report: Path | None = None) -> None:
@@ -2532,6 +2551,9 @@ def main() -> None:
     record = sub.add_parser("record-browser-validation")
     record.add_argument("--issue", type=int, required=True)
     record.add_argument("--report", type=Path, required=True)
+    host_record = sub.add_parser("record-host-validation")
+    host_record.add_argument("--issue", type=int, required=True)
+    host_record.add_argument("--report", type=Path, required=True)
     resume = sub.add_parser("resume")
     resume.add_argument("--issue", type=int, required=True)
     resume.add_argument("--reason", required=True)
@@ -2562,12 +2584,13 @@ def main() -> None:
         record_validation_context(args.issue, report, observation_input=True)
         print(f"Captured live observation inputs for issue #{args.issue}.")
         return
-    if args.command == "record-browser-validation":
+    if args.command in {"record-browser-validation", "record-host-validation"}:
         matches = [item for item in project_items() if issue_content(item)["number"] == args.issue]
         if args.issue < 1 or len(matches) != 1:
             raise BrokerError("validation issue missing or ambiguous")
-        register_external_validation(args.issue, matches[0], args.report)
-        print(f"Recorded successful external browser validation for issue #{args.issue}.")
+        kind = "host" if args.command == "record-host-validation" else "browser"
+        register_external_validation(args.issue, matches[0], args.report, kind=kind)
+        print(f"Recorded successful external {kind} validation for issue #{args.issue}.")
         return
     if args.command == "sync-status":
         for item in project_items():

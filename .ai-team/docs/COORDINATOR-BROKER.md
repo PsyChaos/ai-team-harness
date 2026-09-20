@@ -24,6 +24,23 @@ the outer bubblewrap boundary protects the coordinator checkout and secrets.
 
 ## Implemented lifecycle
 
+### Authenticated host acceptance
+
+Use `[external:host]` for validation that requires the real authenticated host
+(for example installed-provider discovery). It is separate from browser checks.
+After independently inspecting and running the relevant host check, register its
+bounded PASS report with `coordinator-broker record-host-validation --issue N
+--report /absolute/report.md`. The report must identify the current clean HEAD.
+The broker signs its repository/issue/HEAD binding, supplies it to retries and
+independent reviews, and requires fresh evidence again if HEAD changes. A host
+report cannot satisfy a browser gate and never grants review approval.
+
+If an earlier handoff mislabeled a host check as browser validation, use the
+existing bounded operator `resume` after registration. The worker must correct
+its handoff to `[external:host]`, assess the supplied evidence honestly and keep
+HEAD when no product change is needed. Copying an external attestation into a
+new documentation commit unnecessarily invalidates the evidence binding.
+
 ### Provider quota recovery
 
 A failed provider process with a recognized quota message on stderr enters
