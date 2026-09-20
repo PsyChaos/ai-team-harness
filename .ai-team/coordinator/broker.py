@@ -497,7 +497,9 @@ def lifecycle_action(item: dict[str, Any]) -> dict[str, Any] | None:
         payload["issue_fingerprint"] = issue_scope_fingerprint(trusted_issue_scope(issue))
         payload["prior_result_digest"] = file_digest(results / f"issue-{issue}-implementer.md")
     if kind in {"retry_implementation", "recover_provider"}:
-        payload["provider_wait_digest"] = file_digest(provider_wait_path(issue))
+        wait_digest = file_digest(provider_wait_path(issue))
+        if wait_digest:
+            payload["provider_wait_digest"] = wait_digest
     clone_path = clone_metadata_path(issue)
     payload["clone_digest"] = file_digest(clone_path)
     if payload["clone_digest"]:
