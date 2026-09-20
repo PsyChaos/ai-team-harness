@@ -1,0 +1,7 @@
+{
+  "providers": [
+    {"name":"codex","cli":"codex","enabled":true,"concurrency":1,"models":[{"cli_default":true,"enabled":true,"efforts":[],"work_types":["implementation","review"]}]},
+    {"name":"claude","cli":"claude","enabled":true,"concurrency":1,"models":[{"cli_default":true,"enabled":true,"efforts":[],"work_types":["implementation","review"]}]},
+    {"name":"gemini","cli":"gemini","enabled":true,"concurrency":1,"models":[{"cli_default":true,"enabled":true,"efforts":[],"work_types":[]}]}
+  ]
+}
