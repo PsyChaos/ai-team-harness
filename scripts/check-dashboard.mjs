@@ -33,20 +33,45 @@ try {
     await page.keyboard.press('Tab');
     assert.equal(await page.locator('.skip').evaluate(el => el === document.activeElement), true);
     await page.keyboard.press('Tab');
+    const checkView = async target => {
+      const tab = page.getByRole('tab', { name: target, exact: true });
+      assert.equal(await tab.getAttribute('aria-selected'), 'true');
+      assert.equal(await tab.evaluate(el => el === document.activeElement), true);
+      assert.equal(await page.locator(`#${target.toLowerCase()}`).isVisible(), true);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true,
+        `${name}: ${target} must fit the viewport`);
+      assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
+      assert.equal(await tab.evaluate(el => getComputedStyle(el).outlineStyle !== 'none'), true);
+    };
+    await checkView('Factory');
     for (const target of ['Agents', 'Events']) {
       await page.keyboard.press('ArrowRight');
-      assert.equal(await page.getByRole('tab', { name: target }).getAttribute('aria-selected'), 'true');
+      await checkView(target);
+    }
+    for (const [key, target] of [['ArrowRight', 'Factory'], ['ArrowLeft', 'Events'],
+      ['Home', 'Factory'], ['End', 'Events']]) {
+      await page.keyboard.press(key);
+      await checkView(target);
     }
     await page.keyboard.press('Tab'); // Focusable Events panel.
+    assert.equal(await page.locator('#events').evaluate(el => el === document.activeElement), true);
     for (const label of ['ALL', 'ASSIGN', 'REVIEW', 'CI', 'MERGE', 'HUMAN']) {
       await page.keyboard.press('Tab');
+      assert.equal(await page.getByRole('button', { name: label, exact: true })
+        .evaluate(el => el === document.activeElement), true);
       await page.keyboard.press('Enter');
       assert.equal(await page.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed'), 'true');
     }
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Space');
+    assert.equal(await page.getByRole('button', { name: 'MERGE', exact: true }).getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-filter][aria-pressed="true"]').count(), 1);
     // Once the local files have loaded, controls also work fully offline.
     await context.setOffline(true);
     await page.getByRole('tab', { name: 'Factory', exact: true }).click();
     assert.equal(await page.locator('#factory').isVisible(), true);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(requests.filter(url => new URL(url).origin !== new URL(shell).origin), []);
     await context.close();
 
     const refContext = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });

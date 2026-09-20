@@ -29,6 +29,34 @@ sans-serif/monospace. Both original theme files remain unchanged.
 
 ## Browser validation to complete in a provisioned environment
 
+### Retry evidence (2026-09-20)
+
+The retry worker still cannot complete browser acceptance. The following checks
+were rerun against the existing implementation and the expanded browser script:
+
+| Command | Result |
+| --- | --- |
+| `GOCACHE=/tmp/issue-4-go-cache go test ./...` | PASS; dashboard 0.006s; command has no test files |
+| `GOCACHE=/tmp/issue-4-go-cache go vet ./...` | PASS, exit 0 |
+| `GOCACHE=/tmp/issue-4-go-cache go build -o /tmp/issue-4-harness ./cmd/harness` | PASS, exit 0 |
+| `node --check scripts/check-dashboard.mjs` | PASS, exit 0 |
+| `node --check internal/dashboard/assets/app.js` | PASS, exit 0 |
+| `git diff --check` | PASS, exit 0 |
+| `git diff 3e9f1a6 --exit-code -- 'theme/Factory Floor.dc.html' theme/support.js` | PASS; references unchanged |
+| `/tmp/issue-4-harness` | BLOCKED; `listen tcp 127.0.0.1:8080: socket: operation not permitted` |
+| `node scripts/check-dashboard.mjs` | BLOCKED; `ERR_MODULE_NOT_FOUND` for `playwright` |
+
+The browser script now checks viewport overflow and reduced motion on all three
+views, keyboard focus and visible outlines on selected tabs, arrow wrapping,
+Home/End, focus on each event filter, reverse traversal and Space activation.
+It also checks for external requests and page errors after interaction, rather
+than only on initial load. These new browser assertions are syntax-checked but
+**have not executed**. No screenshots or manual keyboard results were produced.
+Socket restrictions cannot be lifted by this worker, so acceptance remains
+partial until validation runs in a provisioned environment.
+
+### Execution instructions
+
 Use an environment with Playwright and its Chromium already installed; these
 are review tools, not dashboard dependencies. Serve the application above and
 serve the repository reference using `python3 -m http.server 8081 --bind 127.0.0.1`.
