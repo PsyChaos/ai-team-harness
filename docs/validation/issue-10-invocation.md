@@ -54,7 +54,37 @@ exact-version host check.
 - [ ] [external:host] Compare generated Claude invocation against installed
   Claude Code 2.1.235 `--version` and `--help`; record actual output and source
   HEAD. Available sandbox CLI is 2.1.84.
-- [ ] [external:ci] Hosted CI has not run; coordinator must publish and collect it.
+- [x] Hosted CI for implementation commit `8c47b3a4e647f83d0b8cbe06475df4268fd9d4fb`
+  was reported successful in the broker-supplied retry review (see provenance
+  below). This is reported evidence, not an independent CI query.
+
+## Retry validation
+
+On 2026-09-21, rechecked source commit
+`8c47b3a4e647f83d0b8cbe06475df4268fd9d4fb` in the assigned worktree:
+
+| Command | Result |
+| --- | --- |
+| `go test ./internal/invocation/...` | exit 0; invocation package passed (0.018s) |
+| `/usr/bin/claude --version` | exit 0; `2.1.84 (Claude Code)` |
+| `/usr/bin/claude --help` | exit 0; documents `--print`, `--no-session-persistence`, `--output-format text`, `--model`, and `--effort` with low, medium, high, max |
+
+The installed CLI remains the older version. These checks do not resolve the
+review's exact-version 2.1.235 requirement, and the original captured fixtures
+remain unchanged. No exact-HEAD host attestation was supplied in this retry pack.
+
+CI provenance: the broker-supplied review of PR #40 at `8c47b3a`, review digest
+`113d844c2c277260424495d0a26eaf0653888ee2cb3324b9ae77d0eeeb214fa1`,
+reports two successful `harness-checks` runs at 23:41–23:42 UTC. This corrects
+the original statement that hosted CI had not run; GitHub was not queried in
+this retry. That report covers the implementation commit above, not the
+subsequent documentation correction containing this section. The coordinator
+must collect CI for the resulting new HEAD.
+
+- [ ] [external:host] Capture Claude Code 2.1.235 version/help and compare the
+  generated invocation flags and supported model/effort values for the exact
+  revision being reviewed.
+- [ ] [external:ci] Collect hosted CI for this documentation correction's HEAD.
 
 No push, GitHub query, worker credential access, or authenticated model execution
 was performed. Effective settings describe command arguments, not remote service
