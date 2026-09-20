@@ -1,0 +1,228 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${HARNESS_AGENT_ROLE:?}"
+: "${HARNESS_AGENT_PROVIDER:?}"
+: "${HARNESS_AGENT_ISSUE:?}"
+: "${HARNESS_AGENT_PACK:?}"
+: "${HARNESS_AGENT_RESULT:?}"
+: "${HARNESS_ROOT:?}"
+
+PACK="$HARNESS_AGENT_PACK"
+RESULT="$HARNESS_AGENT_RESULT"
+PROVIDER="$HARNESS_AGENT_PROVIDER"
+ROLE="$HARNESS_AGENT_ROLE"
+MODEL_PROFILE="${HARNESS_AGENT_MODEL_PROFILE:-balanced}"
+MAX_TURNS="${HARNESS_WORKER_MAX_TURNS:-100}"
+
+mkdir -p "$(dirname "$RESULT")"
+: > "$RESULT"
+
+[[ -s "$PACK" ]] || { echo "ERROR: agent pack missing or empty: $PACK" >&2; exit 11; }
+
+case "$ROLE" in
+  implementer) SKILL_FILE="$HARNESS_ROOT/.agents/skills/implementing-tasks/SKILL.md" ;;
+  reviewer) SKILL_FILE="$HARNESS_ROOT/.agents/skills/reviewing-changes/SKILL.md" ;;
+  security-reviewer) SKILL_FILE="$HARNESS_ROOT/.agents/skills/security-reviewing/SKILL.md" ;;
+  *) echo "Unsupported agent role: $ROLE" >&2; exit 12 ;;
+esac
+
+[[ -s "$SKILL_FILE" ]] || { echo "ERROR: role skill missing: $SKILL_FILE" >&2; exit 13; }
+
+resolve_model() {
+  local provider="$1" profile="$2" profile_var="" generic_var="" value=""
+  case "$provider" in
+    codex)
+      generic_var="HARNESS_CODEX_MODEL"
+      case "$profile" in
+        fast) profile_var="HARNESS_CODEX_MODEL_FAST" ;;
+        balanced) profile_var="HARNESS_CODEX_MODEL_BALANCED" ;;
+        strong) profile_var="HARNESS_CODEX_MODEL_STRONG" ;;
+      esac ;;
+    claude)
+      generic_var="HARNESS_CLAUDE_MODEL"
+      case "$profile" in
+        fast) profile_var="HARNESS_CLAUDE_MODEL_FAST" ;;
+        balanced) profile_var="HARNESS_CLAUDE_MODEL_BALANCED" ;;
+        strong) profile_var="HARNESS_CLAUDE_MODEL_STRONG" ;;
+      esac ;;
+    gemini)
+      generic_var="HARNESS_GEMINI_MODEL"
+      case "$profile" in
+        fast) profile_var="HARNESS_GEMINI_MODEL_FAST" ;;
+        balanced) profile_var="HARNESS_GEMINI_MODEL_BALANCED" ;;
+        strong) profile_var="HARNESS_GEMINI_MODEL_STRONG" ;;
+      esac ;;
+    *) return 1 ;;
+  esac
+  value="${!profile_var:-}"
+  [[ -n "$value" ]] || value="${!generic_var:-}"
+  printf '%s' "$value"
+}
+
+SELECTED_MODEL="$(resolve_model "$PROVIDER" "$MODEL_PROFILE")"
+
+PROMPT="$(
+  cat "$SKILL_FILE"
+  printf '\n\n--- ASSIGNED WORK PACK ---\n\n'
+  cat "$PACK"
+  printf '\n\n--- RUNTIME ROUTING ---\nProvider: %s\nModel profile: %s\n' "$PROVIDER" "$MODEL_PROFILE"
+)"
+
+run_and_capture() {
+  set +e
+  "$@" | tee "$RESULT"
+  local rc=${PIPESTATUS[0]}
+  set -e
+  if [[ "$rc" -ne 0 ]]; then
+    printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
+    return "$rc"
+  fi
+}
+
+case "$PROVIDER" in
+  codex)
+    # The disposable CODEX_HOME selects a least-privilege permission profile.
+    # Passing --sandbox would silently switch Codex back to the legacy policy,
+    # whose default read access includes the credential file.
+    args=(exec --ephemeral --strict-config)
+    [[ -n "$SELECTED_MODEL" ]] && args+=(--model "$SELECTED_MODEL")
+
+    set +e
+    printf '%s\n' "$PROMPT" | codex "${args[@]}" - | tee "$RESULT"
+    rc=${PIPESTATUS[1]}
+    set -e
+    if [[ "$rc" -ne 0 ]]; then
+      printf '\n# Harness Process Failure\n\nProvider process exit code: %s\n' "$rc" >> "$RESULT"
+      exit "$rc"
+    fi
+    ;;
+
+  claude)
+    validation_tools=(
+      "Bash(make test *)"
+      "Bash(make check *)"
+      "Bash(make build *)"
+      "Bash(make lint *)"
+      "Bash(npm test *)"
+      "Bash(npm run test *)"
+      "Bash(npm run check *)"
+      "Bash(npm run lint *)"
+      "Bash(npm run build *)"
+      "Bash(pnpm test *)"
+      "Bash(pnpm run test *)"
+      "Bash(pnpm check *)"
+      "Bash(pnpm lint *)"
+      "Bash(pnpm build *)"
+      "Bash(yarn test *)"
+      "Bash(yarn run test *)"
+      "Bash(yarn check *)"
+      "Bash(yarn lint *)"
+      "Bash(yarn build *)"
+      "Bash(pytest *)"
+      "Bash(python -m pytest *)"
+      "Bash(uv run pytest *)"
+      "Bash(uv run ruff *)"
+      "Bash(ruff check *)"
+      "Bash(cargo test *)"
+      "Bash(cargo check *)"
+      "Bash(cargo clippy *)"
+      "Bash(cargo fmt *)"
+      "Bash(go test *)"
+      "Bash(go vet *)"
+      "Bash(flutter test *)"
+      "Bash(flutter analyze *)"
+      "Bash(dart test *)"
+      "Bash(dart analyze *)"
+      "Bash(gradle test *)"
+      "Bash(gradle check *)"
+      "Bash(gradle build *)"
+      "Bash(./gradlew test *)"
+      "Bash(./gradlew check *)"
+      "Bash(./gradlew build *)"
+      "Bash(mvn test *)"
+      "Bash(mvn verify *)"
+      "Bash(dotnet test *)"
+      "Bash(dotnet build *)"
+    )
+    # Keep model filesystem visibility inside the assigned worktree.  The
+    # external secret store is deliberately unreachable even if task text is
+    # prompt-injected.
+    allowed_tools=("Read(./**)" "Grep(./**)" "Glob(./**)")
+    if [[ "$ROLE" == "implementer" ]]; then
+      tools="Bash,Read,Write,Edit,Grep,Glob"
+      allowed_tools+=(
+        "Edit(./**)"
+        "Bash(git status *)"
+        "Bash(git diff *)"
+        "Bash(git log *)"
+        "Bash(git show *)"
+        "Bash(git rev-parse *)"
+        "Bash(git add *)"
+        "Bash(git commit *)"
+        "${validation_tools[@]}"
+      )
+    else
+      tools="Bash,Read,Grep,Glob"
+    fi
+    printf -v allowed_tools_csv '%s,' "${allowed_tools[@]}"
+    allowed_tools_csv="${allowed_tools_csv%,}"
+    args=(
+      --safe-mode
+      -p
+      --no-session-persistence
+      --output-format text
+      --max-turns "$MAX_TURNS"
+      --permission-mode dontAsk
+      --tools "$tools"
+      --allowedTools "$allowed_tools_csv"
+    )
+    [[ -n "$SELECTED_MODEL" ]] && args+=(--model "$SELECTED_MODEL")
+    printf '%s\n' "$PROMPT" | run_and_capture claude "${args[@]}"
+    ;;
+
+  gemini)
+    # Gemini has no no-session-persistence flag. Its supported CLI home override
+    # keeps session storage disposable while reusing only existing OAuth files.
+    GEMINI_AUTH_DIR="${GEMINI_CLI_HOME:-$HOME}/.gemini"
+    GEMINI_PRIVATE_HOME="$(mktemp -d -t harness-gemini-XXXXXXXX)"
+    trap 'rm -rf -- "$GEMINI_PRIVATE_HOME"' EXIT
+    mkdir -m 700 "$GEMINI_PRIVATE_HOME/.gemini"
+    for auth_file in oauth_creds.json google_accounts.json; do
+      if [[ -f "$GEMINI_AUTH_DIR/$auth_file" ]]; then
+        cp "$GEMINI_AUTH_DIR/$auth_file" "$GEMINI_PRIVATE_HOME/.gemini/$auth_file"
+        chmod 600 "$GEMINI_PRIVATE_HOME/.gemini/$auth_file"
+      fi
+    done
+    printf '%s\n' '{"security":{"auth":{"selectedType":"oauth-personal"}}}' \
+      > "$GEMINI_PRIVATE_HOME/.gemini/settings.json"
+    chmod 600 "$GEMINI_PRIVATE_HOME/.gemini/settings.json"
+    export GEMINI_CLI_HOME="$GEMINI_PRIVATE_HOME"
+    args=(-p "Execute the assigned work pack provided on stdin." --output-format text)
+    [[ -n "$SELECTED_MODEL" ]] && args+=(--model "$SELECTED_MODEL")
+    [[ "${HARNESS_GEMINI_USE_SANDBOX:-1}" == "1" ]] && args+=(--sandbox)
+    if [[ "$ROLE" == "implementer" ]]; then
+      args+=(--approval-mode "${HARNESS_GEMINI_APPROVAL_MODE:-yolo}")
+    else
+      args+=(--approval-mode plan)
+    fi
+    printf '%s\n' "$PROMPT" | run_and_capture gemini "${args[@]}"
+    ;;
+
+  *)
+    echo "Unsupported provider: $PROVIDER" >&2
+    exit 10
+    ;;
+esac
+
+if [[ ! -s "$RESULT" ]]; then
+  cat > "$RESULT" <<EOF
+# Agent Result
+
+## Outcome
+FAILED
+
+Provider process exited without a structured final response.
+EOF
+  exit 20
+fi

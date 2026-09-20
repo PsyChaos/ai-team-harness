@@ -1,0 +1,126 @@
+version: "1.1.0"
+
+state:
+  durable_source: github
+  local_runtime_is_disposable: true
+
+decision_engine:
+  optional: true
+  default_backend: rules
+  supported_backends: [rules, jev]
+  jev:
+    model: jev-latest
+    fallback: rules
+    uses:
+      task_classification: true
+      provider_routing: true
+      model_profile_routing: true
+      review_routing: true
+      retry_routing: true
+      action_routing: true
+    never_delegate:
+      - ci_passed
+      - dependency_complete
+      - worker_alive
+      - pr_merged
+      - merge_gate
+      - branch_exists
+    confidence_defaults:
+      work_type: 0.70
+      provider: 0.75
+      model_profile: 0.75
+      review_mode: 0.80
+      retry_strategy: 0.80
+      action: 0.85
+
+github:
+  status_field: "Harness Status"
+  provider_field: "Provider"
+  model_field: "Model"
+  role_field: "Agent Role"
+  risk_field: "Risk"
+  priority_field: "Priority"
+  work_type_field: "Work Type"
+  retry_field: "Retry Count"
+  evidence_field: "Evidence"
+
+statuses:
+  - BACKLOG
+  - PLANNING
+  - READY
+  - CLAIMED
+  - IN_PROGRESS
+  - IMPLEMENTED
+  - REVIEWING
+  - CHANGES_REQUESTED
+  - VERIFIED
+  - MERGE_READY
+  - MERGING
+  - DONE
+  - BLOCKED
+  - RETRY_PENDING
+  - WAITING_HUMAN
+  - WAITING_PROVIDER
+  - FAILED
+
+parallelism:
+  implementers: 4
+  reviewers: 2
+  security_reviewers: 1
+
+retry:
+  max_attempts: 2
+  change_provider_on_last_attempt: true
+
+routing:
+  coordinator:
+    preferred: [claude, codex, gemini]
+  planning:
+    preferred: [claude, codex, gemini]
+  implementation:
+    preferred: [codex, claude, gemini]
+  review:
+    prefer_different_provider: true
+    require_different_session: true
+  security_review:
+    require_independent_session: true
+
+isolation:
+  # Compatibility key: implementations now use independent --no-local clones,
+  # never shared git-worktree metadata.
+  worktree_per_implementation_task: true
+  worktree_root: ".worktrees"
+  branch_prefix: "ai/issue-"
+
+worker_contract:
+  github_project_write_allowed: false
+  merge_allowed: false
+  publish_branch_allowed: false
+  local_commit_required: true
+
+review_contract:
+  formal_github_approval_required: false
+  evidence_comment_marker: "<!-- ai-harness-review:v1 -->"
+  blocking_severities: [CRITICAL, HIGH]
+
+merge:
+  require_ci: true
+  require_review_evidence: true
+  require_acceptance_criteria: true
+  implementer_may_merge: false
+  prefer_merge_queue_when_configured: true
+
+human_gate:
+  required_for:
+    - destructive_production_data_change
+    - security_policy_exception
+    - unapproved_breaking_public_api
+    - ambiguous_product_decision
+    - credential_rotation
+    - destructive_infrastructure_action
+
+evidence:
+  require_change_summary: true
+  require_acceptance_mapping: true
+  require_validation_output: true
+  require_risk_summary: true

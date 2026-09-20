@@ -1,0 +1,9 @@
+{
+  "issue": 123,
+  "context": "Implementation failed because the task spans two independently deployable modules.",
+  "allowed_actions": [
+    "retry",
+    "replan",
+    "split_task"
+  ]
+}

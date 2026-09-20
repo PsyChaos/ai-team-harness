@@ -1,0 +1,7 @@
+.ai-team/runtime/*
+!.ai-team/runtime/.gitkeep
+.worktrees/
+*.provider-output
+__pycache__/
+*.py[cod]
+.ruff_cache/

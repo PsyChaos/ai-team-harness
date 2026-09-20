@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  exec python3 "$SCRIPT_DIR/../bootstrap/bootstrap.py" --help
+fi
+source "$SCRIPT_DIR/lib.sh"
+set -a
+load_runtime
+"$SCRIPT_DIR/migrate-secrets" --bootstrap >/dev/null
+load_runtime
+load_secrets
+set +a
+exec python3 "$SCRIPT_DIR/../bootstrap/bootstrap.py" "$@"

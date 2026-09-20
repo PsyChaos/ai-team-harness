@@ -1,0 +1,14 @@
+{
+  "issue": 123,
+  "title": "Prevent duplicate OAuth refresh under concurrent requests",
+  "body": "Token refresh can race and reuse a refresh token. Implement a concurrency-safe fix and regression tests.",
+  "risk": "HIGH",
+  "work_type": "Backend",
+  "languages": [
+    "Python"
+  ],
+  "available_providers": [
+    "codex",
+    "claude"
+  ]
+}

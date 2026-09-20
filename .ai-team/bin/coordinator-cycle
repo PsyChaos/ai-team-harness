@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# The coordinator is deterministic.  Provider CLIs are worker-only and never
+# receive GitHub credentials, signing keys, or mutation authority.
+exec "$SCRIPT_DIR/coordinator-broker" run

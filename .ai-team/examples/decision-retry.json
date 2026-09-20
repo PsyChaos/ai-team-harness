@@ -1,0 +1,12 @@
+{
+  "issue": 123,
+  "risk": "HIGH",
+  "attempts": 1,
+  "previous_provider": "codex",
+  "failure_kind": "wrong_plan",
+  "failure_evidence": "Reviewer found the implementation protects only one process while deployment is multi-process.",
+  "available_providers": [
+    "codex",
+    "claude"
+  ]
+}

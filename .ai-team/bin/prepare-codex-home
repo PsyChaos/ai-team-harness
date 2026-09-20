@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$#" -ne 2 ]]; then
+  echo "Usage: $0 <private-runtime-root> <implementer|reviewer|security-reviewer>" >&2
+  exit 2
+fi
+
+SOURCE_HOME="${CODEX_HOME:-$HOME/.codex}"
+RUNTIME_ROOT="$1"
+ROLE="$2"
+case "$ROLE" in
+  implementer) WORKSPACE_ACCESS="write" ;;
+  reviewer|security-reviewer) WORKSPACE_ACCESS="read" ;;
+  *) echo "Unsupported Codex worker role: $ROLE" >&2; exit 2 ;;
+esac
+CODEX_ENTRY="$(command -v codex || true)"
+[[ -n "$CODEX_ENTRY" ]] || { echo "Codex CLI is unavailable" >&2; exit 6; }
+CODEX_ENTRY="$(realpath -e -- "$CODEX_ENTRY")"
+if [[ "$CODEX_ENTRY" == */bin/codex.js ]]; then
+  CODEX_INSTALL_ROOT="${CODEX_ENTRY%/bin/codex.js}"
+else
+  CODEX_INSTALL_ROOT="$(dirname "$CODEX_ENTRY")"
+fi
+[[ -d "$CODEX_INSTALL_ROOT" && ! -L "$CODEX_INSTALL_ROOT" ]] || {
+  echo "Codex installation path is unsafe" >&2
+  exit 6
+}
+[[ -d "$SOURCE_HOME" && ! -L "$SOURCE_HOME" ]] || {
+  echo "Codex source home is missing or unsafe: $SOURCE_HOME" >&2
+  exit 3
+}
+[[ -d "$RUNTIME_ROOT" && ! -L "$RUNTIME_ROOT" ]] || {
+  echo "Codex private runtime root is missing or unsafe: $RUNTIME_ROOT" >&2
+  exit 4
+}
+SOURCE_HOME="$(realpath -e -- "$SOURCE_HOME")"
+RUNTIME_ROOT="$(realpath -e -- "$RUNTIME_ROOT")"
+AUTH="$SOURCE_HOME/auth.json"
+[[ -f "$AUTH" && ! -L "$AUTH" ]] || {
+  echo "Codex file-based authentication is unavailable: $AUTH" >&2
+  exit 5
+}
+[[ "$(stat -c %s "$AUTH")" -le 1048576 ]] || {
+  echo "Codex authentication file is unexpectedly large" >&2
+  exit 5
+}
+
+PRIVATE_HOME="$(mktemp -d "$RUNTIME_ROOT/ai-harness-codex.XXXXXXXX")"
+chmod 700 "$PRIVATE_HOME"
+install -m 400 -- "$AUTH" "$PRIVATE_HOME/auth.json"
+mkdir -m 700 "$PRIVATE_HOME/sqlite" "$PRIVATE_HOME/tmp"
+mkdir -m 500 "$PRIVATE_HOME/project-config"
+cat > "$PRIVATE_HOME/config.toml" <<EOF
+approval_policy = "never"
+default_permissions = "harness-worker"
+
+[permissions.harness-worker]
+description = "AI Team Harness worker with restricted reads"
+
+[permissions.harness-worker.filesystem]
+":minimal" = "read"
+":tmpdir" = "write"
+":slash_tmp" = "write"
+"$CODEX_INSTALL_ROOT" = "read"
+"$PRIVATE_HOME" = "deny"
+
+[permissions.harness-worker.filesystem.":workspace_roots"]
+"." = "$WORKSPACE_ACCESS"
+".git" = "$WORKSPACE_ACCESS"
+
+[permissions.harness-worker.network]
+enabled = false
+EOF
+chmod 400 "$PRIVATE_HOME/config.toml"
+printf '%s\n' "$PRIVATE_HOME"

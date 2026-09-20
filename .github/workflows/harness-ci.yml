@@ -1,0 +1,33 @@
+name: Harness CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harness-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Python tests
+        run: python3 -m unittest discover -s .ai-team/tests -p 'test_*.py'
+      - name: Secret and provider boundaries
+        run: |
+          bash .ai-team/tests/secret-boundary.sh
+          bash .ai-team/tests/codex-private-home.sh
+          bash .ai-team/tests/coordinator-cycle-claude-args.sh
+      - name: Shell syntax
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            if head -n 1 "$file" | grep -q '^#!/usr/bin/env bash'; then
+              bash -n "$file"
+            fi
+          done < <(find .ai-team/bin .ai-team/hooks .ai-team/tests -type f -print0)

@@ -1,0 +1,34 @@
+{
+  "hooksConfig": {"enabled": true, "notifications": true},
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "run_shell_command",
+        "sequential": true,
+        "hooks": [
+          {
+            "type": "command",
+            "name": "ai-harness-shell-guard",
+            "command": "bash \"$GEMINI_PROJECT_DIR/.ai-team/hooks/guard-shell.sh\"",
+            "timeout": 10000,
+            "description": "Blocks a narrow set of destructive shell operations."
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": "run_shell_command|write_file|replace",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "ai-harness-audit",
+            "command": "bash \"$GEMINI_PROJECT_DIR/.ai-team/hooks/audit-tool.sh\"",
+            "timeout": 10000,
+            "description": "Writes local disposable tool audit metadata."
+          }
+        ]
+      }
+    ]
+  }
+}

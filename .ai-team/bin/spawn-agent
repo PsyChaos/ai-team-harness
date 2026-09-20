@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$#" -lt 5 || "$#" -gt 6 ]]; then
+  echo "Usage: $0 <implementer|reviewer|security-reviewer> <claude|codex|gemini> <issue> <workdir> <pack> [fast|balanced|strong]" >&2
+  exit 2
+fi
+
+ROLE="$1"
+PROVIDER="$2"
+ISSUE="$3"
+WORKDIR="$4"
+PACK="$5"
+MODEL_PROFILE="${6:-balanced}"
+
+[[ "$ISSUE" =~ ^[1-9][0-9]*$ ]] || { echo "Issue must be a positive integer" >&2; exit 2; }
+
+case "$MODEL_PROFILE" in
+  fast|balanced|strong) ;;
+  *) echo "Unsupported model profile: $MODEL_PROFILE" >&2; exit 2 ;;
+esac
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/lib.sh"
+load_runtime
+HOST_CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+SECRET_FILE="${HARNESS_SECRETS_FILE:-$(harness_default_secrets_file)}"
+RUNTIME_DIR="/run/user/$(id -u)"
+SECRET_DIR="$(dirname "$SECRET_FILE")"
+SHARED_SECRET_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/ai-team-harness"
+BWRAP="$(command -v bwrap || true)"
+[[ -n "$BWRAP" ]] || { echo "bubblewrap is required for worker isolation" >&2; exit 9; }
+BWRAP_ARGS=(--ro-bind / / --dev-bind /dev /dev)
+if [[ -d "$SHARED_SECRET_ROOT" ]]; then
+  BWRAP_ARGS+=(--tmpfs "$SHARED_SECRET_ROOT")
+fi
+if [[ "$SECRET_DIR" != "$SHARED_SECRET_ROOT" && "$SECRET_DIR" != "$SHARED_SECRET_ROOT/"* ]]; then
+  BWRAP_ARGS+=(--tmpfs "$SECRET_DIR")
+fi
+BWRAP_ARGS+=(--tmpfs "$RUNTIME_DIR" --tmpfs /tmp)
+for private_dir in "$HOME/.config/gh" "$HOME/.ssh" "$HOME/.gnupg"; do
+  [[ -d "$private_dir" ]] && BWRAP_ARGS+=(--tmpfs "$private_dir")
+done
+for private_file in "$HOME/.git-credentials" "$HOME/.config/git/credentials"; do
+  [[ -f "$private_file" ]] && BWRAP_ARGS+=(--bind /dev/null "$private_file")
+done
+BWRAP_ARGS+=(--unshare-pid --unshare-uts --unshare-ipc --proc /proc --new-session --die-with-parent)
+
+provider_enabled "$PROVIDER" || { echo "Provider disabled: $PROVIDER" >&2; exit 3; }
+ROOT_REAL="$(realpath -e -- "$HARNESS_ROOT")"
+WORKDIR_REAL="$(realpath -e -- "$WORKDIR")"
+PACK_REAL="$(realpath -e -- "$PACK")"
+[[ -d "$WORKDIR_REAL" && ! -L "$WORKDIR" ]] || { echo "Workdir must be a regular directory" >&2; exit 4; }
+[[ -f "$PACK_REAL" && ! -L "$PACK" ]] || { echo "Pack must be a regular file" >&2; exit 5; }
+case "$WORKDIR_REAL" in
+  "$ROOT_REAL/.worktrees/issue-$ISSUE") ;;
+  *) echo "Workdir is outside the canonical issue clone" >&2; exit 4 ;;
+esac
+case "$PACK_REAL" in
+  "$ROOT_REAL/.ai-team/runtime/taskpacks/issue-$ISSUE-"*.md) ;;
+  *) echo "Pack is outside the canonical task-pack directory" >&2; exit 5 ;;
+esac
+[[ "$(git -C "$WORKDIR_REAL" rev-parse --show-toplevel)" == "$WORKDIR_REAL" ]] || {
+  echo "Workdir is not a Git clone root" >&2; exit 4;
+}
+[[ -d "$WORKDIR_REAL/.git" && ! -L "$WORKDIR_REAL/.git" ]] || {
+  echo "Workdir must be an isolated clone with its own .git directory" >&2; exit 4;
+}
+BRANCH="$(git -C "$WORKDIR_REAL" branch --show-current)"
+[[ "$BRANCH" =~ ^ai/issue-${ISSUE}-[a-z0-9][a-z0-9-]{0,39}$ ]] || {
+  echo "Worktree branch does not match the assigned issue" >&2; exit 4;
+}
+WORKDIR="$WORKDIR_REAL"
+PACK="$PACK_REAL"
+CODEX_PRIVATE_HOME=""
+
+case "$ROLE" in
+  implementer) prefix="impl" ;;
+  reviewer) prefix="review" ;;
+  security-reviewer) prefix="security-review" ;;
+  *) echo "Unsupported role: $ROLE" >&2; exit 6 ;;
+esac
+
+if [[ "$ROLE" == "implementer" ]]; then
+  require_var HARNESS_REPO
+  load_secrets
+  SECRET_FILE="$(realpath -e -- "$HARNESS_SECRETS_FILE")"
+  HARNESS_REPO="$HARNESS_REPO" HARNESS_BOOTSTRAP_HMAC_KEY="${HARNESS_BOOTSTRAP_HMAC_KEY:-}" \
+    python3 "$SCRIPT_DIR/../bootstrap/bootstrap.py" --check-dispatch "$ISSUE"
+  unset HARNESS_BOOTSTRAP_HMAC_KEY HARNESS_BROKER_HMAC_KEY TYPESAFE_API_KEY GH_TOKEN GITHUB_TOKEN
+fi
+
+if [[ "$PROVIDER" == "codex" ]]; then
+  HOST_CODEX_HOME="$(realpath -e -- "$HOST_CODEX_HOME")"
+  case "$HOST_CODEX_HOME" in
+    "$ROOT_REAL"|"$ROOT_REAL/"*) echo "Codex authentication home must be outside the repository" >&2; exit 9 ;;
+  esac
+  CODEX_PRIVATE_ROOT="$RUNTIME_DIR/ai-harness-provider-homes"
+  mkdir -p "$CODEX_PRIVATE_ROOT"
+  chmod 700 "$CODEX_PRIVATE_ROOT"
+  [[ ! -L "$CODEX_PRIVATE_ROOT" ]] || { echo "Codex private runtime root is unsafe" >&2; exit 9; }
+  CODEX_PRIVATE_HOME="$(CODEX_HOME="$HOST_CODEX_HOME" "$SCRIPT_DIR/prepare-codex-home" "$CODEX_PRIVATE_ROOT" "$ROLE")"
+  codex_host_dirs=("$HOME/.codex")
+  [[ "$HOST_CODEX_HOME" == "$HOME/.codex" ]] || codex_host_dirs+=("$HOST_CODEX_HOME")
+  for codex_host_dir in "${codex_host_dirs[@]}"; do
+    if [[ -d "$codex_host_dir" && "$codex_host_dir" != "$RUNTIME_DIR" && "$codex_host_dir" != "$RUNTIME_DIR/"* ]]; then
+      BWRAP_ARGS+=(--tmpfs "$codex_host_dir")
+    fi
+  done
+  BWRAP_ARGS+=(
+    --bind "$CODEX_PRIVATE_HOME" "$CODEX_PRIVATE_HOME"
+    --ro-bind "$CODEX_PRIVATE_HOME/auth.json" "$CODEX_PRIVATE_HOME/auth.json"
+    --ro-bind "$CODEX_PRIVATE_HOME/config.toml" "$CODEX_PRIVATE_HOME/config.toml"
+  )
+  if [[ -e "$WORKDIR/.codex" ]]; then
+    [[ -d "$WORKDIR/.codex" && ! -L "$WORKDIR/.codex" ]] || {
+      echo "Refusing unsafe project Codex configuration path" >&2; exit 9;
+    }
+    BWRAP_ARGS+=(--ro-bind "$CODEX_PRIVATE_HOME/project-config" "$WORKDIR/.codex")
+  fi
+fi
+
+UNIT="ai-harness-${prefix}-${ISSUE}"
+RESULT="$HARNESS_ROOT/.ai-team/runtime/results/issue-${ISSUE}-${ROLE}.md"
+JOB="$HARNESS_ROOT/.ai-team/runtime/jobs/issue-${ISSUE}-${ROLE}.env"
+
+[[ ! -L "$RESULT" && ! -L "$JOB" ]] || { echo "Refusing symlinked job/result path" >&2; exit 8; }
+RESULT_DIR="$(dirname "$RESULT")"
+mkdir -p "$RESULT_DIR"
+: > "$RESULT"
+chmod 600 "$RESULT"
+if [[ "$ROLE" == "implementer" ]]; then
+  BWRAP_ARGS+=(--bind "$WORKDIR" "$WORKDIR")
+else
+  BWRAP_ARGS+=(--ro-bind "$WORKDIR" "$WORKDIR")
+fi
+BWRAP_ARGS+=(--bind "$RESULT" "$RESULT")
+
+if systemctl --user is-active --quiet "$UNIT.service"; then
+  echo "Agent unit already active: $UNIT.service" >&2
+  exit 7
+fi
+
+umask 077
+cat > "$JOB" <<EOF
+ROLE=$ROLE
+PROVIDER=$PROVIDER
+MODEL_PROFILE=$MODEL_PROFILE
+ISSUE=$ISSUE
+UNIT=$UNIT
+WORKDIR=$WORKDIR
+PACK=$PACK
+RESULT=$RESULT
+STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+PROVIDER_HOME=$CODEX_PRIVATE_HOME
+EOF
+
+RUNNER="$HARNESS_ROOT/.ai-team/bin/run-provider-agent"
+SYSTEMD_PROVIDER_ENV=()
+if [[ "$PROVIDER" == "codex" ]]; then
+  SYSTEMD_PROVIDER_ENV+=(
+    --setenv=CODEX_HOME="$CODEX_PRIVATE_HOME"
+    --setenv=CODEX_SQLITE_HOME="$CODEX_PRIVATE_HOME/sqlite"
+  )
+fi
+
+systemd-run --user \
+  --unit="$UNIT" \
+  --collect \
+  --property=NoNewPrivileges=yes \
+  --property=UnsetEnvironment="HARNESS_BOOTSTRAP_HMAC_KEY HARNESS_BROKER_HMAC_KEY TYPESAFE_API_KEY GH_TOKEN GITHUB_TOKEN DBUS_SESSION_BUS_ADDRESS XDG_RUNTIME_DIR" \
+  --property=WorkingDirectory="$WORKDIR" \
+  --setenv=HARNESS_AGENT_ROLE="$ROLE" \
+  --setenv=HARNESS_AGENT_PROVIDER="$PROVIDER" \
+  --setenv=HARNESS_AGENT_MODEL_PROFILE="$MODEL_PROFILE" \
+  --setenv=HARNESS_AGENT_ISSUE="$ISSUE" \
+  --setenv=HARNESS_AGENT_PACK="$PACK" \
+  --setenv=HARNESS_AGENT_RESULT="$RESULT" \
+  --setenv=HARNESS_ROOT="$WORKDIR" \
+  --setenv=PATH="$PATH" \
+  --setenv=HARNESS_WORKER_MAX_TURNS="${HARNESS_WORKER_MAX_TURNS:-100}" \
+  --setenv=HARNESS_CODEX_MODEL="${HARNESS_CODEX_MODEL:-}" \
+  --setenv=HARNESS_CODEX_MODEL_FAST="${HARNESS_CODEX_MODEL_FAST:-}" \
+  --setenv=HARNESS_CODEX_MODEL_BALANCED="${HARNESS_CODEX_MODEL_BALANCED:-}" \
+  --setenv=HARNESS_CODEX_MODEL_STRONG="${HARNESS_CODEX_MODEL_STRONG:-}" \
+  --setenv=HARNESS_CLAUDE_MODEL="${HARNESS_CLAUDE_MODEL:-}" \
+  --setenv=HARNESS_CLAUDE_MODEL_FAST="${HARNESS_CLAUDE_MODEL_FAST:-}" \
+  --setenv=HARNESS_CLAUDE_MODEL_BALANCED="${HARNESS_CLAUDE_MODEL_BALANCED:-}" \
+  --setenv=HARNESS_CLAUDE_MODEL_STRONG="${HARNESS_CLAUDE_MODEL_STRONG:-}" \
+  --setenv=HARNESS_GEMINI_MODEL="${HARNESS_GEMINI_MODEL:-}" \
+  --setenv=HARNESS_GEMINI_MODEL_FAST="${HARNESS_GEMINI_MODEL_FAST:-}" \
+  --setenv=HARNESS_GEMINI_MODEL_BALANCED="${HARNESS_GEMINI_MODEL_BALANCED:-}" \
+  --setenv=HARNESS_GEMINI_MODEL_STRONG="${HARNESS_GEMINI_MODEL_STRONG:-}" \
+  --setenv=HARNESS_GEMINI_APPROVAL_MODE="${HARNESS_GEMINI_APPROVAL_MODE:-yolo}" \
+  --setenv=HARNESS_GEMINI_USE_SANDBOX="${HARNESS_GEMINI_USE_SANDBOX:-1}" \
+  "${SYSTEMD_PROVIDER_ENV[@]}" \
+  "$BWRAP" \
+    "${BWRAP_ARGS[@]}" \
+    "$RUNNER"
+
+echo "started: $UNIT.service"
+echo "profile: $MODEL_PROFILE"
+echo "result:  $RESULT"

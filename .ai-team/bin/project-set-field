@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$#" -ne 3 ]]; then
+  echo "Usage: $0 <issue-or-pr-url> <field-name> <value>" >&2
+  exit 2
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+echo "project-set-field is an internal privileged operation; use coordinator-broker" >&2
+exit 77
