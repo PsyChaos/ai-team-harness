@@ -11,8 +11,10 @@ active executor. See [dashboard usage and validation](validation/issue-4-dashboa
 - `scheduler`: deterministic eligibility gates and FIFO bounded aging over caller-supplied
   exact snapshots; provider selection and execution remain separate. See its package
   documentation for round bounds and reservation requirements.
-- `config`, `journal`: documented package placeholders. Configuration
-  loading and journal storage belong to later tasks.
+- `journal`: bounded persisted observations with snapshot and SSE handlers; see
+  [the journal contract](event-journal.md).
+- `config`: documented package placeholder. Configuration loading belongs to a
+  later task.
 
 No provider SDK, credentials, GitHub writes, systemd calls or Python subprocess
 bridge are introduced by the Go command. Existing shell entrypoints are unchanged.
