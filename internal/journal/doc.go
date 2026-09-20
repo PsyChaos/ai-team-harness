@@ -1,3 +1,3 @@
-// Package journal reserves the disposable observation journal for the Go migration.
-// GitHub remains durable work state. Storage and event schemas are deferred.
+// Package journal provides a bounded, persisted observation read model and HTTP
+// snapshot/SSE handlers. GitHub remains authoritative for work state.
 package journal
