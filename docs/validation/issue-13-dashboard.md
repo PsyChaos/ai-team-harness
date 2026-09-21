@@ -75,11 +75,12 @@ Disconnection also overrides agent status with stale/unknown. Labels age every
 DOM textContent. Supplied URLs and markup are ignored. Links are generated only
 for validated `https://github.com/owner/repo/issues/N` or `/pull/N` identities.
 
-## Local validation (2026-09-21)
+## Original implementation validation (2026-09-21)
 
-Provenance: assigned branch based on `6455033`. The commands below validate the
-implementation working tree committed with this report. They are local checks,
-not a hosted-CI or exact-HEAD host attestation.
+Provenance: implementation commit `9769c29ff993a0b32b9d9672dec8875480dfbef4`,
+based on `6455033`. The commands below were reported by the original implementer
+for that revision. They are historical local checks, not checks rerun for the
+retry revision, hosted CI, or an exact-HEAD host attestation.
 
 | Command | Result |
 | --- | --- |
@@ -99,6 +100,23 @@ Browser rendering/XSS behavior, screenshot review and hosted CI remain
 projection/URL tests do not substitute for rendered-XSS or browser assertions.
 
 ## External browser validation
+
+The retry adds a required-to-pass `dashboard-browser` job to Harness CI on push,
+pull request and manual dispatch. It provisions Node 22, Playwright 1.58.2 and
+Chromium, builds the Go dashboard, starts the dashboard and reference servers,
+waits for both to respond, and executes `node scripts/check-dashboard.mjs`.
+Assertion failures fail the job (including through the log capture pipeline).
+Server processes are stopped on exit. This is a workflow job, not a claim that
+repository branch protection has been configured.
+
+The `dashboard-browser-<github.sha>` artifact is retained for 14 days, even on
+failure. It contains any generated screenshots/diffs/results plus browser output,
+server logs, Node/Playwright versions and `source-commit.txt` from `git rev-parse
+HEAD`. For pull-request runs this can identify GitHub's tested merge revision;
+use that file when attributing evidence rather than assuming the branch head.
+A successful job proves the browser assertions ran and captures were generated;
+the diagnostic pixel difference has no pass threshold and visual comparison
+still requires review. CDN access for the preserved reference is required.
 
 In an environment with Playwright, Chromium and loopback sockets provisioned,
 serve the application and serve the preserved repository theme on port 8081:
@@ -126,3 +144,25 @@ spacing. The original reference has no task-detail view, so compare that panel
 against the reference's visual language rather than asserting pixel equality.
 Both original theme files are preserved. Record browser results and visual
 review evidence before acceptance; publication/review does not authorize merge.
+
+## Retry validation (2026-09-21)
+
+Source: retry working tree based on
+`9769c29ff993a0b32b9d9672dec8875480dfbef4`; changes are limited to the browser CI
+job, waiting for asynchronous identity loading in its browser test, and this
+report. No dashboard production code changed. The rejecting review's CI option
+is implemented, but no hosted run or browser attestation was supplied locally.
+
+| Retry check | Result |
+| --- | --- |
+| `node scripts/check-dashboard-model.mjs` | PASS, exit 0: projection, routing provenance, unknown/stale, cursor recovery, bounds and constrained links |
+| `node --check scripts/check-dashboard.mjs` | PASS, exit 0 |
+| Python `yaml.safe_load` of `.github/workflows/harness-ci.yml`, assertions for browser command/artifact wiring, and `bash -n` on every new job's `run` step | PASS, exit 0: workflow YAML, browser execution/artifact wiring and Bash syntax |
+| `git diff --check` | PASS, exit 0 |
+
+Local infrastructure probes reconfirmed `ERR_MODULE_NOT_FOUND` when importing
+`playwright`, and `PermissionError: [Errno 1] Operation not permitted` when
+creating a loopback socket. No browser was launched and no screenshots were
+produced here. Browser/XSS execution, screenshot review, and hosted CI remain
+**VALIDATION_PENDING**, to be supplied by the coordinator-run CI job and review
+of its artifacts. Historical test results above do not validate this revision.

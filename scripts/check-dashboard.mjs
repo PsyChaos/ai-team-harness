@@ -46,6 +46,8 @@ try {
     });
     await page.goto(shell);
     await page.waitForFunction(() => document.querySelector('#connection').textContent === 'Live');
+    // Identity loads independently of the snapshot/stream handshake.
+    await page.waitForFunction(() => document.querySelector('#identity').textContent.includes('Project: owner/7'));
     assert.equal(await page.locator('#demo').isChecked(), false);
     assert.match(await page.locator('#identity').textContent(), /owner\/repo.*owner\/7/);
     assert.match(await page.locator('#decision').textContent(), /requested-model.*effective-model.*rules.*policy-v1/s);
