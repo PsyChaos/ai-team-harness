@@ -222,3 +222,33 @@ func (j *Journal) ReadAfter(cursor uint64) ([]Event, <-chan struct{}, error) {
 	offset := int(cursor - (j.state.Cursor - uint64(len(j.state.Events))))
 	return cloneEvents(j.state.Events[offset:]), j.changed, nil
 }
+
+// Reload refreshes a read-only follower from its configured journal file. The
+// follower must never Append: one external producer owns persistence. Replaced
+// histories must preserve immutable sequence IDs; truncation/rewrite is rejected.
+func (j *Journal) Reload() error {
+	next, err := Open(j.path, j.limits)
+	if err != nil {
+		return err
+	}
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	if next.state.Cursor < j.state.Cursor {
+		return errors.New("follower source cursor moved backwards")
+	}
+	for _, old := range j.state.Events {
+		for _, current := range next.state.Events {
+			if old.ID == current.ID && (old.Type != current.Type || string(old.Data) != string(current.Data)) {
+				return errors.New("follower source rewrote an immutable event")
+			}
+		}
+	}
+	before, _ := json.Marshal(j.state)
+	after, _ := json.Marshal(next.state)
+	if string(before) != string(after) {
+		j.state = next.state
+		close(j.changed)
+		j.changed = make(chan struct{})
+	}
+	return nil
+}

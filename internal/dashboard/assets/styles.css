@@ -35,3 +35,36 @@ button { font:11px 'IBM Plex Mono',ui-monospace,monospace; cursor:pointer; }
 @media(prefers-reduced-motion:reduce) {
  *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
 }
+
+body { color:#e9ecf1; font:13px Archivo,Helvetica,sans-serif; }
+main { min-height:100vh; background:radial-gradient(1200px 600px at 50% -10%,#14181f 0%,#0b0d11 60%); }
+header { display:flex; flex-wrap:wrap; align-items:center; gap:20px; padding:12px 20px; border-bottom:1px solid #ffffff12; background:#0b0d11ed; }
+.brand { font-size:14px; font-weight:700; letter-spacing:.02em; }
+small,h2,.identity,#connection,.demo-toggle,dt { font:11px 'IBM Plex Mono',ui-monospace,monospace; color:#929ba9; }
+small { padding-left:10px; }
+h2 { text-transform:uppercase; letter-spacing:.12em; margin:0 0 14px; }
+h3 { font-size:15px; margin:8px 0; }
+p { line-height:1.5; }
+.identity { padding:0 20px; overflow-wrap:anywhere; }
+.demo-toggle { margin-left:auto; }
+[role=tabpanel] { padding:20px; }
+.overview { display:grid; grid-template-columns:1fr 1.15fr .95fr; gap:14px; margin-bottom:24px; }
+.panel,.task-card,.agent-card,.lane { border:1px solid #ffffff16; border-radius:8px; background:linear-gradient(180deg,#78a0ff0c,#ffffff03); padding:14px; min-width:0; overflow-wrap:anywhere; }
+.task-flow { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+.lane { padding:10px; background:#ffffff03; }
+.task-card { margin-top:8px; padding:10px; }
+.task-card button { text-align:left; width:100%; }
+button { color:#dce6f8; background:#78a0ff12; border:1px solid #78a0ff40; border-radius:4px; padding:6px 10px; overflow-wrap:anywhere; }
+.roster,.responsive-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+.agent-card { margin-bottom:10px; }
+dl { margin:8px 0; }
+dt { margin-top:8px; }
+dd { margin:3px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.event-row { display:grid; grid-template-columns:160px 210px minmax(0,1fr); gap:12px; padding:10px 0; border-bottom:1px solid #ffffff10; overflow-wrap:anywhere; }
+.event-row span { white-space:pre-wrap; }
+#event-rail .event-row { display:block; }
+#event-rail span { display:block; margin:4px 0; }
+.filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+#task-detail { margin:20px; }
+.state { color:#a7c9ff; }
+@media(max-width:520px) { .roster,.responsive-grid { grid-template-columns:minmax(0,1fr); } header { gap:12px; } .demo-toggle { margin-left:0; } }

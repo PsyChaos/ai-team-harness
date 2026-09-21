@@ -9,6 +9,62 @@ permissions:
   contents: read
 
 jobs:
+  dashboard-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SCREENSHOT_DIR: ${{ runner.temp }}/dashboard-browser
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Record browser validation provenance
+        run: |
+          mkdir -p "$SCREENSHOT_DIR"
+          git rev-parse HEAD > "$SCREENSHOT_DIR/source-commit.txt"
+          node --version > "$SCREENSHOT_DIR/node-version.txt"
+      - name: Provision browser test dependencies
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.58.2
+          ./node_modules/.bin/playwright install --with-deps chromium
+          ./node_modules/.bin/playwright --version > "$SCREENSHOT_DIR/playwright-version.txt"
+      - name: Dashboard browser acceptance and theme captures
+        shell: bash
+        run: |
+          set -euo pipefail
+          go build -o "$RUNNER_TEMP/dashboard-harness" ./cmd/harness
+          "$RUNNER_TEMP/dashboard-harness" > "$SCREENSHOT_DIR/dashboard-server.log" 2>&1 &
+          dashboard_pid=$!
+          python3 -m http.server 8081 --bind 127.0.0.1 > "$SCREENSHOT_DIR/reference-server.log" 2>&1 &
+          reference_pid=$!
+          trap 'kill "$dashboard_pid" "$reference_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/ > /dev/null &&
+               curl --fail --silent 'http://127.0.0.1:8081/theme/Factory%20Floor.dc.html' > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          "$ready"
+          node scripts/check-dashboard.mjs 2>&1 | tee "$SCREENSHOT_DIR/browser-check.log"
+      - name: Retain browser evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard-browser-${{ github.sha }}
+          path: ${{ runner.temp }}/dashboard-browser
+          if-no-files-found: error
+          retention-days: 14
+
   harness-checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -25,6 +81,12 @@ jobs:
           go build ./...
           go vet ./...
           go test -race ./...
+      - name: Dashboard projection and syntax
+        run: |
+          node scripts/check-dashboard-model.mjs
+          node --input-type=module --check < internal/dashboard/assets/app.js
+          node --input-type=module --check < internal/dashboard/assets/model.js
+          node --check scripts/check-dashboard.mjs
       - name: Recorded contract provenance
         run: |
           python3 internal/domain/testdata/capture.py --output "$RUNNER_TEMP/contracts"
